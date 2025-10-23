@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Accueil - Gestion Employés & Paie</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        body {
+          background: linear-gradient(135deg,#6a11cb,#2575fc);
+          color: white;
+          height:100vh;
+          display:flex;
+          align-items:center;
+          justify-content:center;
+        }
+        .card {
+          border-radius:14px;
+          box-shadow:0 6px 20px rgba(0,0,0,0.15);
+        }
+        .btn-wide {
+          padding:12px 24px;
+          border-radius:24px;
+        }
+    </style>
+</head>
+<body>
+<div class="container text-center">
+    <div class="card bg-light text-dark p-5">
+        <h1>My Payroll Space</h1>
+        <p class="lead">Connectez-vous pour accéder à votre espace</p>
+
+        <!-- Bouton centré -->
+        <div class="d-flex justify-content-center mt-4">
+            <a href="/login" class="btn btn-primary btn-wide">Se connecter</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

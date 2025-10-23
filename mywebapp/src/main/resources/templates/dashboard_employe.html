@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Espace Employé — Fiches de paie</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+    <style>
+        .card{border-radius:12px;}
+        .btn-custom{border-radius:20px;}
+        .table-hover tbody tr:hover{background-color: #e9f7ef;}
+    </style>
+</head>
+<body class="bg-light">
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h2>Bonjour, Paul Dupont</h2>
+            <small>p.dupont@example.com</small>
+        </div>
+        <a href="index.html" class="btn btn-outline-secondary btn-custom">Déconnexion</a>
+    </div>
+
+    <div class="card p-3">
+        <h4>Vos fiches de paie</h4>
+        <table class="table table-hover">
+            <thead class="thead-light">
+            <tr>
+                <th>Fichier</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody id="list_of_pdf">
+            <!-- Les fichiers seront ajoutés via JS -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const folder = "list_of_pdf/"; // ton dossier local avec les PDF
+    const list_of_pdf = [
+      "payslip_EMP001_2025-01.pdf",
+      "fevrier_2025.pdf",
+      "mars_2025.pdf",
+      "avril_2025.pdf"
+    ];
+
+    const tbody = document.getElementById("list_of_pdf");
+
+    list_of_pdf.forEach(file => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${file}</td>
+        <td>
+          <a href="${folder}${file}" target="_blank" class="btn btn-sm btn-success">Voir</a>
+          <a href="${folder}${file}" download class="btn btn-sm btn-outline-secondary">⬇️ Télécharger</a>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+</script>
+</body>
+</html>

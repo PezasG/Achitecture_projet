@@ -3,8 +3,10 @@ package com.example.myapi.controller;
 import com.example.myapi.model.Employee;
 import com.example.myapi.service.EmployeeService;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,31 +19,44 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(EmployeeController.class)
-public class EmployeeControllerTest {
+class EmployeeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @Autowired
     private EmployeeService employeeService;
 
+    // ✅ Nouvelle façon de définir ton mock dans le contexte Spring
+    @TestConfiguration
+    static class MockConfig {
+        @Bean
+        EmployeeService employeeService() {
+            return Mockito.mock(EmployeeService.class);
+        }
+    }
+
     @Test
-    public void testGetAllEmployees() throws Exception {
-        // Création de données fictives
+    void testGetAllEmployees() throws Exception {
         List<Employee> mockEmployees = Arrays.asList(
-                new Employee("Gaëtan", "Pezas", "gaetan.pezas@test.fr", "Dev")
+                new Employee("Gaëtan", "Pezas", "gaetan.pezas@test.fr", "Dev", 35, 11, "toto"),
+                new Employee("Yacine", "Znedi", "yacine.znedi@test.fr", "Dev", 35, 22, "psg")
         );
 
-        // Simulation du comportement du service
         when(employeeService.getAllEmployees()).thenReturn(mockEmployees);
 
-        // Appel de la méthode du contrôleur et vérifications
         mockMvc.perform(get("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()) // HTTP 200 OK
+                .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$.length()").value(1)) // 2 employés
-                .andExpect(jsonPath("$[0].name").value("Alice")) // Premier nom
-                .andExpect(jsonPath("$[1].name").value("Bob")); // Deuxième nom
+                // 💡 Correction : tu testes la taille → ici elle devrait être 2
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].firstName").isNotEmpty())
+                .andExpect(jsonPath("$[0].lastName").isNotEmpty())
+                .andExpect(jsonPath("$[0].email").isNotEmpty())
+                .andExpect(jsonPath("$[0].job").isNotEmpty())
+                .andExpect(jsonPath("$[0].hours").isNotEmpty())
+                .andExpect(jsonPath("$[0].salary").isNotEmpty())
+                .andExpect(jsonPath("$[0].mdp").isNotEmpty());
     }
 }

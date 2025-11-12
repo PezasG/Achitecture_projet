@@ -36,6 +36,7 @@ public class EmployeeService {
         // Mettre à jour les champs autorisés
         if (updated.getFirstName() != null) existing.setFirstName(updated.getFirstName());
         if (updated.getLastName() != null) existing.setLastName(updated.getLastName());
+        if (updated.getEmail() != null) existing.setEmail(updated.getEmail());
         if (updated.getJob() != null) existing.setJob(updated.getJob());
 
         return employeeRepository.save(existing);

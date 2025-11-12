@@ -4,15 +4,20 @@
     <meta charset="UTF-8">
     <title>RH — Gestion des employés</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-    <style>.card{border-radius:12px;} .btn-sm-wide{padding:6px 14px; border-radius:8px;}</style>
+    <style>
+        .card { border-radius: 12px; }
+        .btn-sm-wide { padding: 6px 14px; border-radius: 8px; }
+        input.form-control-inline { width: 100%; padding: 2px 6px; font-size: 0.9rem; }
+    </style>
 </head>
 <body class="bg-light">
+
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Espace RH</h2>
+        <h2>Espace RH — Employés</h2>
         <div>
-            <a href="/employees/new" class="btn btn-primary">+ Nouvel employé</a>
-            <a href="/" class="btn btn-outline-secondary">Accueil</a>
+            <button id="addEmployeeBtn" class="btn btn-success">+ Nouvel employé</button>
+            <a href="login.html" class="btn btn-outline-secondary">Accueil</a>
         </div>
     </div>
 
@@ -20,38 +25,194 @@
         <table class="table table-striped">
             <thead class="thead-light">
             <tr>
-                <th>ID</th>
-                <th>Laste Name</th>
-                <th>First Name</th>
+                <th>#</th>
+                <th>Nom</th>
+                <th>Prénom</th>
                 <th>Email</th>
-                <th>Job</th>
+                <th>Poste</th>
+                <th>Heures</th>
+                <th>Salaire</th>
+                <th>Mot de passe</th>
                 <th>Actions</th>
             </tr>
             </thead>
-            <tbody>
-            <!-- ${employees} fourni par le contrôleur -->
-            <tr th:each="emp : ${employees}">
-                <td th:text="${emp.id}">1</td>
-                <td th:text="${emp.LastName}">Dupont</td>
-                <td th:text="${emp.FirstName}">Paul</td>
-                <td th:text="${emp.email}">paul.dupont@gmail.com</td>
-                <td th:text="${emp.job}">Dev</td>
+            <tbody id="employeeTableBody">
+            <tr th:each="emp : ${employees}" th:object="${emp}" th:id="'row-' + ${emp.id}">
+                <td th:text="${emp.id}" class="emp-id">1</td>
+                <td class="emp-lastName" th:text="${emp.lastName}">Dupont</td>
+                <td class="emp-firstName" th:text="${emp.firstName}">Paul</td>
+                <td class="emp-email" th:text="${emp.email}">p.dupont@example.com</td>
+                <td class="emp-jobTitle" th:text="${emp.jobTitle}">Développeur</td>
+                <td class="emp-hours" th:text="${emp.hours}">35</td>
+                <td class="emp-salary" th:text="${emp.salary}">2500</td>
+                <td class="emp-password" th:text="${emp.password != null ? '••••••' : ''}">••••••</td>
                 <td>
-                    <a th:href="@{|/employees/edit/${emp.id}|}" class="btn btn-sm btn-warning btn-sm-wide">Modifier</a>
-                    <!-- suppression via POST/DELETE -->
-                    <form th:action="@{|/delete/${emp.id}|}" method="post">
+                    <button class="btn btn-sm btn-warning btn-sm-wide" onclick="enableEdit(this)">Modifier</button>
+                    <form th:action="@{|/employees/delete/${emp.id}|}" method="post" th:onsubmit="return confirm('Supprimer cet employé ?');" style="display:inline-block;">
                         <button type="submit" class="btn btn-sm btn-danger btn-sm-wide">Supprimer</button>
                     </form>
                 </td>
             </tr>
 
-            <!-- message si vide -->
             <tr th:if="${#lists.isEmpty(employees)}">
-                <td colspan="6" class="text-center">Aucun employé</td>
+                <td colspan="9" class="text-center">Aucun employé</td>
             </tr>
             </tbody>
         </table>
     </div>
 </div>
+
+<script>
+    // Activer la modification
+    function enableEdit(button) {
+        const row = button.closest('tr');
+        const id = row.querySelector('.emp-id').textContent.trim();
+
+        const editableFields = [
+            'lastName', 'firstName', 'email', 'jobTitle', 'hours', 'salary', 'password'
+        ];
+
+        editableFields.forEach(field => {
+            const td = row.querySelector(`.emp-${field}`);
+            const value = td.textContent.trim();
+            const type = field === 'password' ? 'text' : 'text'; // afficher en clair pendant édition
+            td.innerHTML = `<input name="${field}" type="${type}" class="form-control-inline" value="${value === '••••••' ? '' : value}">`;
+        });
+
+        button.textContent = "Valider";
+        button.classList.remove("btn-warning");
+        button.classList.add("btn-success");
+        button.onclick = function () {
+            validateEdit(this, id);
+        };
+    }
+
+    // Validation des modifications
+    function validateEdit(button, id) {
+        const row = button.closest('tr');
+        const inputs = row.querySelectorAll('input');
+
+        const data = {
+            id: id,
+            lastName: inputs[0].value,
+            firstName: inputs[1].value,
+            email: inputs[2].value,
+            jobTitle: inputs[3].value,
+            hours: inputs[4].value,
+            salary: inputs[5].value,
+            password: inputs[6].value
+        };
+
+        fetch(`/employees/update/${id}`, {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).then(res => {
+            if (res.ok) {
+                row.querySelector('.emp-lastName').textContent = data.lastName;
+                row.querySelector('.emp-firstName').textContent = data.firstName;
+                row.querySelector('.emp-email').textContent = data.email;
+                row.querySelector('.emp-jobTitle').textContent = data.jobTitle;
+                row.querySelector('.emp-hours').textContent = data.hours;
+                row.querySelector('.emp-salary').textContent = data.salary;
+                row.querySelector('.emp-password').textContent = '••••••';
+
+                button.textContent = "Modifier";
+                button.classList.remove("btn-success");
+                button.classList.add("btn-warning");
+                button.onclick = function () {
+                    enableEdit(this);
+                };
+            } else {
+                alert("Erreur lors de la mise à jour.");
+            }
+        }).catch(err => {
+            console.error(err);
+            alert("Erreur réseau");
+        });
+    }
+
+    // Ajouter un nouvel employé
+    document.getElementById("addEmployeeBtn").addEventListener("click", function () {
+        const tableBody = document.getElementById("employeeTableBody");
+        const existingFormRow = document.getElementById("new-employee-row");
+        if (existingFormRow) return;
+
+        const row = document.createElement("tr");
+        row.id = "new-employee-row";
+        row.innerHTML = `
+      <td>—</td>
+      <td><input name="lastName" class="form-control-inline" placeholder="Nom"></td>
+      <td><input name="firstName" class="form-control-inline" placeholder="Prénom"></td>
+      <td><input name="email" class="form-control-inline" placeholder="Email"></td>
+      <td><input name="jobTitle" class="form-control-inline" placeholder="Poste"></td>
+      <td><input name="hours" class="form-control-inline" placeholder="Heures"></td>
+      <td><input name="salary" class="form-control-inline" placeholder="Salaire"></td>
+      <td><input name="password" type="text" class="form-control-inline" placeholder="Mot de passe (affiché)"></td>
+      <td>
+        <button class="btn btn-success btn-sm-wide" onclick="submitNewEmployee(this)">Ajouter</button>
+        <button class="btn btn-secondary btn-sm-wide" onclick="cancelNewEmployee()">Annuler</button>
+      </td>
+    `;
+        tableBody.prepend(row);
+    });
+
+    function cancelNewEmployee() {
+        const row = document.getElementById("new-employee-row");
+        if (row) row.remove();
+    }
+
+    // Soumission du nouvel employé
+    function submitNewEmployee(button) {
+        const row = button.closest('tr');
+        const inputs = row.querySelectorAll('input');
+
+        const data = {
+            lastName: inputs[0].value,
+            firstName: inputs[1].value,
+            email: inputs[2].value,
+            jobTitle: inputs[3].value,
+            hours: inputs[4].value,
+            salary: inputs[5].value,
+            password: inputs[6].value
+        };
+
+        fetch('/employees/create', {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).then(res => {
+            if (res.ok) {
+                res.json().then(createdEmployee => {
+                    const tableBody = document.getElementById("employeeTableBody");
+                    const newRow = document.createElement("tr");
+                    newRow.innerHTML = `
+            <td>${createdEmployee.id}</td>
+            <td class="emp-lastName">${createdEmployee.lastName}</td>
+            <td class="emp-firstName">${createdEmployee.firstName}</td>
+            <td class="emp-email">${createdEmployee.email}</td>
+            <td class="emp-jobTitle">${createdEmployee.jobTitle}</td>
+            <td class="emp-hours">${createdEmployee.hours}</td>
+            <td class="emp-salary">${createdEmployee.salary}</td>
+            <td class="emp-password">••••••</td>
+            <td>
+              <button class="btn btn-sm btn-warning btn-sm-wide" onclick="enableEdit(this)">Modifier</button>
+              <form action="/employees/delete/${createdEmployee.id}" method="post" onsubmit="return confirm('Supprimer cet employé ?');" style="display:inline-block;">
+                <button type="submit" class="btn btn-sm btn-danger btn-sm-wide">Supprimer</button>
+              </form>
+            </td>
+          `;
+                    tableBody.appendChild(newRow);
+                    row.remove();
+                });
+            } else {
+                alert("Erreur lors de la création.");
+            }
+        }).catch(err => {
+            console.error(err);
+            alert("Erreur réseau");
+        });
+    }
+</script>
 </body>
 </html>

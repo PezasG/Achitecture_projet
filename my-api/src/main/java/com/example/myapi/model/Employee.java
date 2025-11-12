@@ -2,8 +2,6 @@ package com.example.myapi.model;
 
 import jakarta.persistence.*;
 
-import java.util.Date;
-
 @Entity
 public class Employee {
 
@@ -14,15 +12,21 @@ public class Employee {
     private String LastName;
     private String email;
     private String job;
+    private int hours;
+    private int salary;
+    private String mdp;
 
     // Constructeurs
     public Employee() {}
 
-    public Employee(String FirstName, String LastName, String email,  String job) {
+    public Employee(String FirstName, String LastName, String email,  String job, int hours, int salary, String mdp) {
         this.FirstName = FirstName;
         this.LastName = LastName;
         this.email = email;
         this.job = job;
+        this.hours = hours;
+        this.salary = salary;
+        this.mdp = mdp;
     }
 
     // Getters et Setters
@@ -61,4 +65,16 @@ public class Employee {
     public String getJob() { return job; }
 
     public void setJob(String job) { this.job = job; }
+
+    public int getHours() { return hours; }
+
+    public void setHours(int hours) { this.hours = hours; }
+
+    public int getSalary() { return salary; }
+
+    public void setSalary(int salary) { this.salary = salary; }
+
+    public String getMdp() { return mdp; }
+
+    public void setMdp(String mdp) { this.mdp = mdp; }
 }

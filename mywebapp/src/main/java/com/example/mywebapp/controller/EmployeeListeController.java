@@ -17,24 +17,36 @@ public class EmployeeListeController {
     @GetMapping("/employee_list")
     public String getEmployee(Model model) {
         List<Employee> employees = employeeClient.getAllEmployees();
-
         model.addAttribute("employees", employees);
         model.addAttribute("employee", new Employee());
         model.addAttribute("deleteEmployee", new Employee());
         return "employee_list";
     }
 
-    @PostMapping("/add")
+    // CREATE
+    @PostMapping("/create")
     public String saveEmployee(@ModelAttribute Employee employee) {
         employeeClient.save(employee);
         return "redirect:/employees";
     }
 
+    // DELETE
     @PostMapping("/delete/{id}")
     public String deleteEmployee(@ModelAttribute("delete") Employee employee) {
         System.out.println("ID reçu pour suppression : " + employee.getId());
         if (employee.getId() != null) {
             employeeClient.delete(employee.getId());
+        }
+        return "redirect:/employee_list";
+    }
+
+    // UPDATE
+    @PostMapping("/update/{id}")
+    public String updateEmployee(@ModelAttribute("update") Employee employee) {
+        System.out.println("Données reçues pour mise à jour : " + employee);
+
+        if (employee.getId() != null) {
+            employeeClient.update(employee.getId(), employee);
         }
         return "redirect:/employee_list";
     }

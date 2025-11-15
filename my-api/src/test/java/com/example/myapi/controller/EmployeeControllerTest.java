@@ -39,8 +39,8 @@ class EmployeeControllerTest {
     @Test
     void testGetAllEmployees() throws Exception {
         List<Employee> mockEmployees = Arrays.asList(
-                new Employee("Gaëtan", "Pezas", "gaetan.pezas@test.fr", "Dev", 35, 11, "toto"),
-                new Employee("Yacine", "Znedi", "yacine.znedi@test.fr", "Dev", 35, 22, "psg")
+                new Employee("Gaëtan", "Pezas", "gaetan.pezas@test.fr", "Dev", 35, 11),
+                new Employee("Yacine", "Znedi", "yacine.znedi@test.fr", "Dev", 35, 22)
         );
 
         when(employeeService.getAllEmployees()).thenReturn(mockEmployees);
@@ -56,7 +56,6 @@ class EmployeeControllerTest {
                 .andExpect(jsonPath("$[0].email").isNotEmpty())
                 .andExpect(jsonPath("$[0].job").isNotEmpty())
                 .andExpect(jsonPath("$[0].hours").isNotEmpty())
-                .andExpect(jsonPath("$[0].salary").isNotEmpty())
-                .andExpect(jsonPath("$[0].mdp").isNotEmpty());
+                .andExpect(jsonPath("$[0].salary").isNotEmpty());
     }
 }

@@ -29,7 +29,6 @@ public class User {
         this.employee = employee;
     }
 
-
     public Long getId() {
         return id;
     }

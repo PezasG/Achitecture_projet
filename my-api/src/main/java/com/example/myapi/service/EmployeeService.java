@@ -33,7 +33,7 @@ public class EmployeeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id " + id));
     }
 
-    public Employee createEmployee(Employee employee) {
+    public Employee createEmployee(Employee employee, String role) {
         // Sauvegarde l'employé dans la base
         Employee saved = employeeRepository.save(employee);
 
@@ -44,7 +44,8 @@ public class EmployeeService {
         User user = new User();
         user.setEmail(employee.getEmail());
         user.setMDP(mdp);
-        user.setRole("EMPLOYE");
+        user.setRole(role.toUpperCase());
+        user.setEmployee(saved);
 
         // Lier l'utilisateur à l'employé
         user.setEmployee(saved);

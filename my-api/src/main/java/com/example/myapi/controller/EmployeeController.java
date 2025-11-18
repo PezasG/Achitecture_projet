@@ -2,7 +2,7 @@ package com.example.myapi.controller;
 
 import com.example.myapi.model.Employee;
 import com.example.myapi.service.EmployeeService;
-import io.swagger.v3.oas.annotations.Operation;
+import com.example.myapi.DTO.EmployeeCreateDTO;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,11 +35,21 @@ public class EmployeeController {
         return ResponseEntity.ok(employee);
     }
 
+    // @PostMapping("/save")
+    //    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
+    //        Employee created = employeeService.createEmployee(employee);
+    //        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    //    }
+
     // Ajouter un employé
-    @PostMapping("/save")
-    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
-        Employee created = employeeService.createEmployee(employee);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    @PostMapping("/employees")
+    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee, @RequestParam String role) {
+        String finalRole = role.toUpperCase();
+        if (!finalRole.equals("RH") && !finalRole.equals("EMPLOYE")) {
+            return ResponseEntity.badRequest().build();
+        }
+        Employee created = employeeService.createEmployee(employee, finalRole);
+        return ResponseEntity.ok(created);
     }
 
     // Modifier un employé

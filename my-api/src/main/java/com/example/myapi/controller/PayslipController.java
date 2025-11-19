@@ -38,11 +38,17 @@ public class PayslipController {
     @GetMapping("/employee/{id}")
     public List<Payslip> getByEmployee(@PathVariable Long id){return payslipService.getPayslipsByEmployee(id);}
 
+    // Creer une fiche de paie pour un employé
+    @GetMapping("/employee/{id}/create")
+    public ResponseEntity<Payslip> createPayslip(@PathVariable Long id, @RequestParam String month) {
+        return ResponseEntity.ok(payslipService.createPayslip(id, month));
+    }
 
-    // generer une fiche de paie ??
-    @PostMapping("/generate/{month}")
-    public void generate(@PathVariable String month){
-        payslipService.generatePayslipsForMonth(month);
+    // Supprime une fiche de paie
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<Void> deletePayslip(@PathVariable Long id) {
+        payslipService.deletePayslip(id);
+        return ResponseEntity.noContent().build();
     }
 }
 

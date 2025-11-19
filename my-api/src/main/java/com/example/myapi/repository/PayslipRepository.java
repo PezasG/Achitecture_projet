@@ -10,5 +10,4 @@ import java.util.List;
 @Repository
 public interface PayslipRepository extends JpaRepository<Payslip, Long> {
     List<Payslip> findByEmployee(Employee employee);
-    List<Payslip> findByMonth(String month);
 }

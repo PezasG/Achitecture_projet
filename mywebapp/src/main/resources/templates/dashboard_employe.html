@@ -1,63 +1,176 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" xmlns:th="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="UTF-8">
-    <title>Espace Employé — Fiches de paie</title>
+    <title>Espace Employé — Tableau de bord</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
     <style>
-        .card{border-radius:12px;}
-        .btn-custom{border-radius:20px;}
-        .table-hover tbody tr:hover{background-color: #e9f7ef;}
+        body {
+            background: linear-gradient(135deg,#6a11cb,#2575fc);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 50px;
+        }
+
+        .card {
+            border-radius: 14px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            background: #ffffff;
+            color: #333;
+        }
+
+        .btn-wide {
+            padding: 10px 22px;
+            border-radius: 24px;
+        }
+
+        .btn-logout {
+            padding: 8px 20px;
+            border-radius: 24px;
+            font-weight: bold;
+        }
+
+        /* Onglets */
+        .nav-tabs {
+            border-bottom: none;
+        }
+        .nav-tabs .nav-link {
+            color: #333;
+            background: #e9ecef;
+            border-radius: 14px 14px 0 0;
+            margin-right: 4px;
+            font-weight: 500;
+        }
+        .nav-tabs .nav-link.active {
+            background: white;
+            color: #2575fc;
+            border: 2px solid #ffffff;
+            border-bottom: none;
+        }
+
+        /* Table */
+        .table-hover tbody tr:hover {
+            background-color: #eef5ff;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #444;
+        }
+
+        .info-value {
+            color: #111;
+        }
     </style>
 </head>
-<body class="bg-light">
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h2>Bonjour, Paul Dupont</h2>
-            <small>p.dupont@example.com</small>
-        </div>
-        <a href="index.html" class="btn btn-outline-secondary btn-custom">Déconnexion</a>
+
+<body>
+
+<div class="container" style="max-width: 900px;">
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center mb-4 text-white">
+        <h2 class="mb-0">Bonjour, Paul Dupont</h2>
+        <a href="/" class="btn btn-danger btn-wide">
+            Déconnexion
+        </a>
     </div>
 
-    <div class="card p-3">
-        <h4>Vos fiches de paie</h4>
-        <table class="table table-hover">
-            <thead class="thead-light">
-            <tr>
-                <th>Fichier</th>
-                <th>Actions</th>
-            </tr>
-            </thead>
-            <tbody id="list_of_pdf">
-            <!-- Les fichiers seront ajoutés via JS -->
-            </tbody>
-        </table>
+    <!-- CARD AVEC ONGLETS -->
+    <div class="card p-4">
+
+        <!-- NAVIGATION ONGLET -->
+        <ul class="nav nav-tabs mb-4" id="employeeTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="tab" href="#infos">Informations</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="tab" href="#paie">Fiches de paie</a>
+            </li>
+        </ul>
+
+        <!-- CONTENU ONGLET -->
+        <div class="tab-content">
+
+            <!-- ONGLET INFORMATIONS -->
+            <div class="tab-pane fade show active" id="infos">
+
+                <h4 class="mb-3">Vos informations personnelles</h4>
+
+                <div class="row">
+                    <div class="col-md-6 mb-2"><span class="info-label">Nom :</span> <span class="info-value">Dupont</span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Prénom :</span> <span class="info-value">Paul</span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Email :</span> <span class="info-value">p.dupont@example.com</span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Poste :</span> <span class="info-value">Développeur</span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Heures :</span> <span class="info-value">35 h</span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Salaire :</span> <span class="info-value">2500 €</span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Mot de passe :</span> <span class="info-value">Toto123</span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Rôle :</span> <span class="info-value">Employé</span></div>
+                </div>
+            </div>
+
+            <!-- ONGLET FICHES DE PAIE -->
+            <div class="tab-pane fade" id="paie">
+
+                <h4 class="mb-3">Vos fiches de paie</h4>
+
+                <table class="table table-hover">
+                    <thead class="thead-light">
+                    <tr>
+                        <th>Fichier</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+
+                    <tbody id="list_of_pdf">
+                    <!-- Rempli par JS -->
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
     </div>
 </div>
 
+
+<!-- SCRIPTS -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+
 <script>
-    const folder = "list_of_pdf/"; // ton dossier local avec les PDF
+
+    // Liste fictive — sera remplacée par ton backend
+    const folder = "list_of_pdf/";
     const list_of_pdf = [
-      "payslip_EMP001_2025-01.pdf",
-      "fevrier_2025.pdf",
-      "mars_2025.pdf",
-      "avril_2025.pdf"
+        "payslip_EMP001_2025-01.pdf",
+        "fevrier_2025.pdf",
+        "mars_2025.pdf",
+        "avril_2025.pdf"
     ];
 
     const tbody = document.getElementById("list_of_pdf");
 
     list_of_pdf.forEach(file => {
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${file}</td>
-        <td>
-          <a href="${folder}${file}" target="_blank" class="btn btn-sm btn-success">Voir</a>
-          <a href="${folder}${file}" download class="btn btn-sm btn-outline-secondary">⬇️ Télécharger</a>
-        </td>
-      `;
-      tbody.appendChild(tr);
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+            <td>${file}</td>
+            <td>
+                <a href="${folder}${file}" target="_blank"
+                   class="btn btn-sm btn-primary btn-wide">Voir</a>
+
+                <a href="${folder}${file}" download
+                   class="btn btn-sm btn-outline-secondary btn-wide">⬇️ Télécharger</a>
+            </td>
+        `;
+        tbody.appendChild(tr);
     });
+
 </script>
+
 </body>
 </html>

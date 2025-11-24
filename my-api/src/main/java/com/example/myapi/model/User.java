@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name = "users") // pgAdmin aime pas user tout court
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -42,7 +42,7 @@ public class EmployeeController {
     //    }
 
     // Ajouter un employé
-    @PostMapping("/employees")
+    @PostMapping("/save")
     public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee, @RequestParam String role) {
         String finalRole = role.toUpperCase();
         if (!finalRole.equals("RH") && !finalRole.equals("EMPLOYE")) {

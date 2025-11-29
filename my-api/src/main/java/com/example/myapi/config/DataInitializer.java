@@ -1,9 +1,7 @@
 package com.example.myapi.config;
 
 import com.example.myapi.model.Employee;
-import com.example.myapi.model.User;
 import com.example.myapi.repository.EmployeeRepository;
-import com.example.myapi.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,32 +10,28 @@ import org.springframework.context.annotation.Configuration;
 public class DataInitializer {
 
     @Bean
-    public CommandLineRunner initData(UserRepository userRepo,
-                                      EmployeeRepository employeeRepo) {
+    public CommandLineRunner initData(EmployeeRepository employeeRepo) {
         return args -> {
-            if (userRepo.count() == 0) {
 
-                Employee e = new Employee();
-                e.setFirstName("Gaetan");
-                e.setLastName("Pezas");
-                e.setJob("PDG");
-                e.setHours(140);
-                e.setSalary(40);
-                e.setEmail("employee@gmail.com");
-                employeeRepo.save(e);
+            // S’il n’y a aucun employé, on en crée un RH par défaut
+            if (employeeRepo.count() == 0) {
 
-                User rh = new User();
+                Employee rh = new Employee();
+                rh.setFirstName("Admin");
+                rh.setLastName("RH");
                 rh.setEmail("rh@gmail.com");
-                rh.setMDP("rh123");
-                rh.setRole("RH");
-                userRepo.save(rh);
+                rh.setJob("Responsable RH");
+                rh.setMdp("rhAdmin");
+                rh.setHours(0);
+                rh.setSalary(0);
+                rh.setAbilities("RH");
 
-                User u = new User();
-                u.setEmail("employee@gmail.com");
-                u.setMDP("emp123");
-                u.setRole("EMPLOYE");
-                u.setEmployee(e);
-                userRepo.save(u);
+                employeeRepo.save(rh);
+
+                System.out.println("=== RH par défaut créé ===");
+                System.out.println("Email : rh@gmail.com");
+                System.out.println("Mot de passe : rhAdmin");
+                System.out.println("==========================");
             }
         };
     }

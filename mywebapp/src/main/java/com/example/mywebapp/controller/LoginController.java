@@ -4,6 +4,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.ui.Model;
+
 import java.util.Map;
 
 @Controller
@@ -21,26 +22,28 @@ public class LoginController {
 
         RestTemplate restTemplate = new RestTemplate();
 
-        // Appel API pour vérifier l’utilisateur
         String apiUrl = "http://localhost:8080/api/authentificator/login";
 
         try {
-            Map response = restTemplate.postForObject(
-                    apiUrl,
-                    Map.of("email", username, "mdp", password),
-                    Map.class
+            Map<String, Object> requestBody = Map.of(
+                    "email", username,
+                    "mdp", password
             );
 
-            if (response == null || !response.containsKey("role")) {
+            // On récupère un Employee complet
+            Map response = restTemplate.postForObject(apiUrl, requestBody, Map.class);
+
+            if (response == null || !response.containsKey("abilities")) {
                 model.addAttribute("error", "Identifiants incorrects");
                 return "login";
             }
 
-            String role = (String) response.get("role");
+            String role = (String) response.get("abilities");
 
-            if ("RH".equals(role)) {
+            // Redirection selon abilities
+            if ("RH".equalsIgnoreCase(role)) {
                 return "redirect:/employee_list";
-            } else if ("EMPLOYE".equals(role)) {
+            } else if ("EMPLOYE".equalsIgnoreCase(role)) {
                 return "redirect:/dashboard_employe";
             } else {
                 model.addAttribute("error", "Rôle inconnu : " + role);
@@ -48,7 +51,7 @@ public class LoginController {
             }
 
         } catch (Exception e) {
-            model.addAttribute("error", "Erreur serveur : " + e.getMessage());
+            model.addAttribute("error", "Erreur serveur lors de la connexion.");
             return "login";
         }
     }

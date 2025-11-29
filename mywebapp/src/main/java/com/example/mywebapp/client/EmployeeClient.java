@@ -6,20 +6,18 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "employeeClient", url = "http://localhost:8080")
+@FeignClient(name = "employee-api", url = "http://localhost:8080/api/employees")
 public interface EmployeeClient {
-    @GetMapping("/api/employees")
+
+    @GetMapping("/all")
     List<Employee> getAllEmployees();
 
-    // CREATE
-    @PostMapping("/api/employees/save")
-    Employee save(Employee employee);
+    @PostMapping("/save")
+    void save(@RequestBody Employee employee);
 
-    // DELETE
-    @DeleteMapping("/api/employees/delete/{id}")
-    Employee delete(@PathVariable Long id);
+    @PutMapping("/update/{id}")
+    void update(@PathVariable("id") Long id, @RequestBody Employee employee);
 
-    // UPDATE
-    @PutMapping("/api/employees/update/{id}")
-    Employee update(@PathVariable Long id, @RequestBody Employee employee);
+    @DeleteMapping("/delete/{id}")
+    void delete(@PathVariable("id") Long id);
 }

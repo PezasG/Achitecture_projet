@@ -2,278 +2,219 @@
 <html lang="fr" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>RH — Gestion des employés</title>
-
-    <link rel="stylesheet"
-          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-
+    <title>Gestion des employés</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
     <style>
-        body {
-            background: linear-gradient(135deg,#6a11cb,#2575fc);
-            min-height: 100vh;
-            color: white;
-            padding-top: 30px;
-        }
-
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-
-        .card {
-            border-radius: 14px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        }
-
-        .btn-wide {
-            padding: 10px 20px;
-            border-radius: 20px;
-        }
-
-        .btn-sm-wide {
-            padding: 6px 14px;
-            border-radius: 10px;
-        }
-
-        input.form-control-inline {
-            width: 100%;
-            padding: 2px 6px;
-            font-size: 0.9rem;
-        }
-
-        h2 {
-            font-weight: 600;
-        }
+        body { background: linear-gradient(135deg,#6a11cb,#2575fc); min-height: 100vh; color: white; padding-top: 30px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .card { border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+        .btn-wide { padding: 10px 20px; border-radius: 20px; }
+        .btn-sm-wide { padding: 6px 14px; border-radius: 10px; }
+        input.form-control-inline, select.form-control-inline { width: 100%; padding: 2px 6px; font-size: 0.9rem; }
+        .action-buttons { display: flex; gap: 6px; align-items: center; }
     </style>
 </head>
 
 <body>
-
 <div class="container">
-
-    <!-- BARRE SUPERIEURE -->
     <div class="top-bar">
         <h2>Espace RH — Employés</h2>
-
         <div>
-            <button id="addEmployeeBtn" class="btn btn-light btn-wide text-dark mr-2">
-                + Nouvel employé
-            </button>
-
-            <!-- BOUTON DECONNEXION -->
-            <a href="/" class="btn btn-danger btn-wide">
-                Déconnexion
-            </a>
+            <button id="addEmployeeBtn" class="btn btn-light btn-wide text-dark mr-2">+ Nouvel employé</button>
+            <a href="/" class="btn btn-danger btn-wide">Déconnexion</a>
         </div>
     </div>
 
-    <!-- LISTE DES EMPLOYES -->
     <div class="card bg-light text-dark p-3">
         <table class="table table-striped">
             <thead class="thead-light">
             <tr>
-                <th>#</th>
-                <th>Nom</th>
-                <th>Prénom</th>
-                <th>Email</th>
-                <th>Poste</th>
-                <th>Heures</th>
-                <th>Salaire</th>
-                <th>Mot de passe</th>
-                <th>Actions</th>
+                <th>#</th><th>Nom</th><th>Prénom</th><th>Email</th><th>Poste</th>
+                <th>Heures</th><th>Salaire</th><th>Mot de passe</th><th>Rôle</th><th>Actions</th>
             </tr>
             </thead>
 
             <tbody id="employeeTableBody">
+            <tr th:each="emp : ${employees}" th:id="'row-' + ${emp.id}">
+                <td th:text="${emp.id}" class="emp-id"></td>
+                <td th:text="${emp.lastName}" class="emp-lastName"></td>
+                <td th:text="${emp.firstName}" class="emp-firstName"></td>
+                <td th:text="${emp.email}" class="emp-email"></td>
+                <td th:text="${emp.job}" class="emp-job"></td>
+                <td th:text="${emp.hours}" class="emp-hours"></td>
+                <td th:text="${emp.salary}" class="emp-salary"></td>
 
-            <tr th:each="emp : ${employees}" th:object="${emp}" th:id="'row-' + ${emp.id}">
-                <td th:text="${emp.id}" class="emp-id">1</td>
-                <td class="emp-lastName" th:text="${emp.lastName}">Dupont</td>
-                <td class="emp-firstName" th:text="${emp.firstName}">Paul</td>
-                <td class="emp-email" th:text="${emp.email}">p.dupont@example.com</td>
-                <td class="emp-jobTitle" th:text="${emp.jobTitle}">Développeur</td>
-                <td class="emp-hours" th:text="${emp.hours}">35</td>
-                <td class="emp-salary" th:text="${emp.salary}">2500</td>
-                <td class="emp-password" th:text="${emp.password != null ? '••••••' : ''}">
+                <!-- Masqué par défaut -->
+                <td class="emp-mdp">
                     ••••••
+                    <span class="real-mdp" th:text="${emp.mdp}" style="display:none;"></span>
                 </td>
 
-                <td>
-                    <button class="btn btn-sm btn-warning btn-sm-wide"
-                            onclick="enableEdit(this)">
-                        Modifier
-                    </button>
+                <td th:text="${emp.abilities}" class="emp-abilities"></td>
 
-                    <form th:action="@{|/employees/delete/${emp.id}|}"
-                          method="post"
-                          th:onsubmit="return confirm('Supprimer cet employé ?');"
-                          style="display:inline-block;">
-                        <button type="submit" class="btn btn-sm btn-danger btn-sm-wide">
-                            Supprimer
-                        </button>
-                    </form>
+                <td class="action-buttons">
+                    <button class="btn btn-warning btn-sm-wide" onclick="enableEdit(this)">Modifier</button>
+                    <button class="btn btn-danger btn-sm-wide" onclick="deleteEmployee(this)">Supprimer</button>
                 </td>
             </tr>
 
             <tr th:if="${#lists.isEmpty(employees)}">
-                <td colspan="9" class="text-center">Aucun employé</td>
+                <td colspan="10" class="text-center">Aucun employé</td>
             </tr>
-
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- JS INCHANGÉ -->
 <script>
+    /* ------------------------------------------------ */
+    /* --------- MODE MODIFICATION EMPLOYÉ ------------ */
+    /* ------------------------------------------------ */
+
     function enableEdit(button) {
         const row = button.closest('tr');
         const id = row.querySelector('.emp-id').textContent.trim();
 
-        const editableFields = [
-            'lastName', 'firstName', 'email', 'jobTitle', 'hours', 'salary', 'password'
-        ];
+        // On masque le bouton supprimer
+        row.querySelector(".action-buttons").querySelectorAll('button')[1].style.display = "none";
 
-        editableFields.forEach(field => {
+        const mdpReal = row.querySelector(".real-mdp").textContent.trim();
+
+        const fields = ['lastName','firstName','email','job','hours','salary','abilities'];
+
+        fields.forEach(field => {
             const td = row.querySelector(`.emp-${field}`);
             const value = td.textContent.trim();
-            td.innerHTML =
-                `<input name="${field}" type="text" class="form-control-inline" value="${value === '••••••' ? '' : value}">`;
+
+            if (field === "abilities") {
+                td.innerHTML = `
+                    <select name="abilities" class="form-control-inline">
+                        <option value="EMPLOYE" ${value === 'EMPLOYE' ? 'selected' : ''}>EMPLOYE</option>
+                        <option value="RH" ${value === 'RH' ? 'selected' : ''}>RH</option>
+                    </select>`;
+            } else {
+                td.innerHTML = `<input class="form-control-inline" name="${field}" value="${value}">`;
+            }
         });
 
-        button.textContent = "Valider";
-        button.classList.remove("btn-warning");
-        button.classList.add("btn-success");
-        button.onclick = function () {
-            validateEdit(this, id);
-        };
+        // mot de passe → AFFICHÉ EN CLAIR
+        const mdpTd = row.querySelector('.emp-mdp');
+        mdpTd.innerHTML = `<input class="form-control-inline" name="mdp" value="${mdpReal}">`;
+
+        // Ajout du bouton ANNULER (gris)
+        const actions = row.querySelector('.action-buttons');
+        const cancelBtn = document.createElement("button");
+        cancelBtn.className = "btn btn-secondary btn-sm-wide";
+        cancelBtn.textContent = "Annuler";
+        cancelBtn.onclick = () => window.location.reload();
+        actions.appendChild(cancelBtn);
+
+        // transformation du bouton modifier → valider
+        button.textContent = 'Valider';
+        button.classList.replace('btn-warning','btn-success');
+        button.onclick = () => validateEdit(id, row);
     }
 
-    function validateEdit(button, id) {
-        const row = button.closest('tr');
-        const inputs = row.querySelectorAll('input');
+    function validateEdit(id, row) {
+        const inputs = row.querySelectorAll('input, select');
 
         const data = {
-            id: id,
             lastName: inputs[0].value,
             firstName: inputs[1].value,
             email: inputs[2].value,
-            jobTitle: inputs[3].value,
+            job: inputs[3].value,
             hours: inputs[4].value,
             salary: inputs[5].value,
-            password: inputs[6].value
+            abilities: inputs[6].value,
+            mdp: inputs[7].value
         };
 
         fetch(`/employees/update/${id}`, {
-            method: "POST",
+            method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
-        }).then(res => {
-            if (res.ok) {
-                row.querySelector('.emp-lastName').textContent = data.lastName;
-                row.querySelector('.emp-firstName').textContent = data.firstName;
-                row.querySelector('.emp-email').textContent = data.email;
-                row.querySelector('.emp-jobTitle').textContent = data.jobTitle;
-                row.querySelector('.emp-hours').textContent = data.hours;
-                row.querySelector('.emp-salary').textContent = data.salary;
-                row.querySelector('.emp-password').textContent = '••••••';
-
-                button.textContent = "Modifier";
-                button.classList.remove("btn-success");
-                button.classList.add("btn-warning");
-                button.onclick = function () {
-                    enableEdit(this);
-                };
-            } else {
-                alert("Erreur lors de la mise à jour.");
-            }
-        }).catch(err => {
-            console.error(err);
-            alert("Erreur réseau");
-        });
+        })
+        .then(res => res.ok ? window.location.reload() : alert("Erreur lors de la mise à jour"))
+        .catch(() => alert("Erreur réseau"));
     }
 
-    document.getElementById("addEmployeeBtn").addEventListener("click", function () {
-        const tableBody = document.getElementById("employeeTableBody");
-        if (document.getElementById("new-employee-row")) return;
+    /* ------------------------------------------------ */
+    /* ------------------ SUPPRESSION ----------------- */
+    /* ------------------------------------------------ */
 
-        const row = document.createElement("tr");
-        row.id = "new-employee-row";
+    function deleteEmployee(button) {
+        const row = button.closest('tr');
+        const id = row.querySelector('.emp-id').textContent.trim();
+        if (!confirm('Confirmer la suppression ?')) return;
+
+        fetch(`/employees/delete/${id}`, { method: 'DELETE' })
+            .then(res => res.ok ? window.location.reload() : alert("Erreur suppression"))
+            .catch(() => alert("Erreur réseau"));
+    }
+
+    /* ------------------------------------------------ */
+    /* ---------- AJOUT D’UN NOUVEL EMPLOYÉ ----------- */
+    /* ------------------------------------------------ */
+
+    document.getElementById('addEmployeeBtn').onclick = () => {
+        if (document.getElementById('new-employee-row')) return;
+
+        const table = document.getElementById('employeeTableBody');
+        const row = document.createElement('tr');
+        row.id = 'new-employee-row';
+
         row.innerHTML = `
-      <td>—</td>
-      <td><input name="lastName" class="form-control-inline" placeholder="Nom"></td>
-      <td><input name="firstName" class="form-control-inline" placeholder="Prénom"></td>
-      <td><input name="email" class="form-control-inline" placeholder="Email"></td>
-      <td><input name="jobTitle" class="form-control-inline" placeholder="Poste"></td>
-      <td><input name="hours" class="form-control-inline" placeholder="Heures"></td>
-      <td><input name="salary" class="form-control-inline" placeholder="Salaire"></td>
-      <td><input name="password" class="form-control-inline" placeholder="Mot de passe"></td>
-      <td>
-        <button class="btn btn-success btn-sm-wide" onclick="submitNewEmployee(this)">Ajouter</button>
-        <button class="btn btn-secondary btn-sm-wide" onclick="cancelNewEmployee()">Annuler</button>
-      </td>
-    `;
-        tableBody.prepend(row);
-    });
+            <td>—</td>
+            <td><input name="lastName" class="form-control-inline"></td>
+            <td><input name="firstName" class="form-control-inline"></td>
+            <td><input name="email" class="form-control-inline"></td>
+            <td><input name="job" class="form-control-inline"></td>
+            <td><input name="hours" class="form-control-inline"></td>
+            <td><input name="salary" class="form-control-inline"></td>
+            <td><input name="mdp" class="form-control-inline"></td>
+            <td>
+                <select name="abilities" class="form-control-inline">
+                    <option value="EMPLOYE">EMPLOYE</option>
+                    <option value="RH">RH</option>
+                </select>
+            </td>
+            <td class="action-buttons">
+                <button class="btn btn-success btn-sm-wide" onclick="submitNewEmployee(this)">Ajouter</button>
+                <button class="btn btn-secondary btn-sm-wide" onclick="cancelNewEmployee()">Annuler</button>
+            </td>
+        `;
+
+        table.prepend(row);
+    };
 
     function cancelNewEmployee() {
-        const row = document.getElementById("new-employee-row");
-        if (row) row.remove();
+        const r = document.getElementById('new-employee-row');
+        if (r) r.remove();
     }
 
     function submitNewEmployee(button) {
         const row = button.closest('tr');
-        const inputs = row.querySelectorAll('input');
+        const inputs = row.querySelectorAll('input, select');
 
         const data = {
             lastName: inputs[0].value,
             firstName: inputs[1].value,
             email: inputs[2].value,
-            jobTitle: inputs[3].value,
+            job: inputs[3].value,
             hours: inputs[4].value,
             salary: inputs[5].value,
-            password: inputs[6].value
+            mdp: inputs[6].value,
+            abilities: inputs[7].value
         };
 
-        fetch('/employees/create', {
-            method: "POST",
+        fetch('/employees/save', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
-        }).then(res => {
-            if (res.ok) {
-                res.json().then(createdEmployee => {
-                    const tableBody = document.getElementById("employeeTableBody");
-                    const newRow = document.createElement("tr");
-                    newRow.innerHTML = `
-            <td>${createdEmployee.id}</td>
-            <td class="emp-lastName">${createdEmployee.lastName}</td>
-            <td class="emp-firstName">${createdEmployee.firstName}</td>
-            <td class="emp-email">${createdEmployee.email}</td>
-            <td class="emp-jobTitle">${createdEmployee.jobTitle}</td>
-            <td class="emp-hours">${createdEmployee.hours}</td>
-            <td class="emp-salary">${createdEmployee.salary}</td>
-            <td class="emp-password">••••••</td>
-            <td>
-              <button class="btn btn-sm btn-warning btn-sm-wide" onclick="enableEdit(this)">Modifier</button>
-              <form action="/employees/delete/${createdEmployee.id}" method="post" onsubmit="return confirm('Supprimer cet employé ?');" style="display:inline-block;">
-                <button type="submit" class="btn btn-sm btn-danger btn-sm-wide">Supprimer</button>
-              </form>
-            </td>
-          `;
-                    tableBody.appendChild(newRow);
-                    row.remove();
-                });
-            } else {
-                alert("Erreur lors de la création.");
-            }
-        }).catch(err => {
-            console.error(err);
-            alert("Erreur réseau");
-        });
+        })
+        .then(res => res.ok ? window.location.reload() : alert("Erreur création"))
+        .catch(() => alert("Erreur réseau"));
     }
 </script>
-
 </body>
 </html>

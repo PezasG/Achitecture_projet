@@ -1,64 +1,42 @@
 package com.example.mywebapp.model;
 
-import java.util.Date;
-
 public class Employee {
+
     private Long id;
 
-    private String FirstName;
-    private String LastName;
+    private String firstName;
+    private String lastName;
     private String email;
     private String job;
+    private String mdp;
     private int hours;
     private int salary;
+    private String abilities;
 
-    // Getters et Setters
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public Long getId() {
-        return id;
-    }
+    public String getFirstName() { return firstName; }
+    public void setFirstName(String firstName) { this.firstName = firstName; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getLastName() { return lastName; }
+    public void setLastName(String lastName) { this.lastName = lastName; }
 
-    public String getFirstName() {
-        return FirstName;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
 
-    public void setFirstName(String firstName) {
-        FirstName = firstName;
-    }
+    public String getJob() { return job; }
+    public void setJob(String job) { this.job = job; }
 
-    public String getLastName() {
-        return LastName;
-    }
-
-    public void setLastName(String lastName) {
-        LastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getJob() {
-        return job;
-    }
-
-    public void setJob(String job) {
-        this.job = job;
-    }
+    public String getMdp() { return mdp; }
+    public void setMdp(String mdp) { this.mdp = mdp; }
 
     public int getHours() { return hours; }
-
     public void setHours(int hours) { this.hours = hours; }
 
     public int getSalary() { return salary; }
-
     public void setSalary(int salary) { this.salary = salary; }
+
+    public String getAbilities() { return abilities; }
+    public void setAbilities(String abilities) { this.abilities = abilities; }
 }

@@ -39,8 +39,8 @@ class EmployeeControllerTest {
     @Test
     void testGetAllEmployees() throws Exception {
         List<Employee> mockEmployees = Arrays.asList(
-                new Employee("Gaëtan", "Pezas", "gaetan.pezas@test.fr", "Dev", 35, 11),
-                new Employee("Yacine", "Znedi", "yacine.znedi@test.fr", "Dev", 35, 22)
+                new Employee("Gaëtan", "Pezas", "gaetan.pezas@test.fr", "Dev", "123", 35, 11, "EMPLOYE"),
+                new Employee("Yacine", "Znedi", "yacine.znedi@test.fr", "Dev", "456", 35, 22, "EMPLOYE")
         );
 
         when(employeeService.getAllEmployees()).thenReturn(mockEmployees);

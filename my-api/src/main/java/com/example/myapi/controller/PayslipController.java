@@ -1,11 +1,8 @@
 package com.example.myapi.controller;
 
-import com.example.myapi.model.Employee;
 import com.example.myapi.model.Payslip;
-import com.example.myapi.model.User;
 import com.example.myapi.repository.EmployeeRepository;
 import com.example.myapi.repository.PayslipRepository;
-import com.example.myapi.repository.UserRepository;
 import com.example.myapi.service.PayslipService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

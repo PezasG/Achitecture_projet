@@ -2,8 +2,6 @@ package com.example.myapi.controller;
 
 import com.example.myapi.model.Employee;
 import com.example.myapi.service.EmployeeService;
-import com.example.myapi.DTO.EmployeeCreateDTO;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,45 +16,41 @@ public class EmployeeController {
     @Autowired
     private EmployeeService employeeService;
 
-    public EmployeeController(EmployeeService employeeService) {
-        this.employeeService = employeeService;
-    }
-
     // Avoir tous les employés
     @GetMapping("/all")
     public ResponseEntity<List<Employee>> getAllEmployees() {
         List<Employee> employees = employeeService.getAllEmployees();
-        return ResponseEntity.ok(employees == null ? Collections.emptyList() : employees);
+        return ResponseEntity.ok(
+                employees == null ? Collections.emptyList() : employees
+        );
     }
 
+    // Avoir un employé par son ID
     @GetMapping("/get/{id}")
     public ResponseEntity<Employee> getEmployee(@PathVariable Long id) {
-        Employee employee = employeeService.getEmployeeById(id);
-        return ResponseEntity.ok(employee);
+        return ResponseEntity.ok(employeeService.getEmployeeById(id));
     }
-
-    // @PostMapping("/save")
-    //    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
-    //        Employee created = employeeService.createEmployee(employee);
-    //        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    //    }
 
     // Ajouter un employé
     @PostMapping("/save")
-    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee, @RequestParam String role) {
-        String finalRole = role.toUpperCase();
-        if (!finalRole.equals("RH") && !finalRole.equals("EMPLOYE")) {
-            return ResponseEntity.badRequest().build();
+    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee) {
+
+        // abilities doit être RH ou EMPLOYE
+        if (employee.getAbilities() == null ||
+                (!employee.getAbilities().equalsIgnoreCase("RH")
+                        && !employee.getAbilities().equalsIgnoreCase("EMPLOYE"))) {
+            return ResponseEntity.badRequest().body(null);
         }
-        Employee created = employeeService.createEmployee(employee, finalRole);
+
+        Employee created = employeeService.createEmployee(employee);
         return ResponseEntity.ok(created);
     }
 
     // Modifier un employé
     @PutMapping("/update/{id}")
-    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
-        Employee updated = employeeService.updateEmployee(id, employee);
-        return ResponseEntity.ok(updated);
+    public ResponseEntity<Employee> updateEmployee(@PathVariable Long id,
+                                                   @RequestBody Employee employee) {
+        return ResponseEntity.ok(employeeService.updateEmployee(id, employee));
     }
 
     // Supprimer un employé
@@ -65,5 +59,4 @@ public class EmployeeController {
         employeeService.deleteEmployee(id);
         return ResponseEntity.noContent().build();
     }
-
 }

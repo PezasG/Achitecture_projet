@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class DashboardController {
 
     @GetMapping("/dashboard_employe")
-    public String showLoginPage() {
-        return "dashboard_employe"; // correspond à templates/login.html
+    public String showDashboard() {
+        return "dashboard_employe";
     }
 }

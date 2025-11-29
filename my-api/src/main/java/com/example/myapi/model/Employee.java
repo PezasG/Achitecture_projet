@@ -13,20 +13,24 @@ public class Employee {
     private String LastName;
     private String email;
     private String job;
+    private String mdp;
     private int hours;
     private int salary;
+    private String abilities;
 
     // Constructeurs
     public Employee() {}
 
-    public Employee(String FirstName, String LastName, String email,  String job, int hours, int salary) {
+    public Employee(String FirstName, String LastName, String email,  String job, String mdp, int hours, int salary, String abilities) {
 
         this.FirstName = FirstName;
         this.LastName = LastName;
         this.email = email;
         this.job = job;
+        this.mdp = mdp;
         this.hours = hours;
         this.salary = salary;
+        this.abilities = abilities;
     }
 
     // Getters et Setters
@@ -66,6 +70,10 @@ public class Employee {
 
     public void setJob(String job) { this.job = job; }
 
+    public String getMdp() { return mdp; }
+
+    public void setMdp(String mdp) { this.mdp = mdp; }
+
     public int getHours() { return hours; }
 
     public void setHours(int hours) { this.hours = hours; }
@@ -73,4 +81,8 @@ public class Employee {
     public int getSalary() { return salary; }
 
     public void setSalary(int salary) { this.salary = salary; }
+
+    public String getAbilities() { return abilities; }
+
+    public void setAbilities(String abilities) { this.abilities = abilities; }
 }

@@ -9,7 +9,7 @@ public class indexController {
     // Quand tu vas sur http://localhost:8081/login
     // → cela affiche le fichier templates/login.html
     @GetMapping("/")
-    public String showLoginPage() {
-        return "index"; // correspond à templates/login.html
+    public String showIndexPage() {
+        return "index";
     }
 }

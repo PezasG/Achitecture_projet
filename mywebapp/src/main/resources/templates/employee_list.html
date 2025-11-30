@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Gestion des employés</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
     <style>
         body { background: linear-gradient(135deg,#6a11cb,#2575fc); min-height: 100vh; color: white; padding-top: 30px; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
@@ -12,6 +13,26 @@
         .btn-sm-wide { padding: 6px 14px; border-radius: 10px; }
         input.form-control-inline, select.form-control-inline { width: 100%; padding: 2px 6px; font-size: 0.9rem; }
         .action-buttons { display: flex; gap: 6px; align-items: center; }
+
+        /* NOUVEAU : panneau PDF */
+        .pdf-panel {
+            background: #f8f9fa;
+            color: black;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 8px;
+            display: none;
+        }
+        .pdf-row {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
     </style>
 </head>
 
@@ -29,12 +50,15 @@
         <table class="table table-striped">
             <thead class="thead-light">
             <tr>
-                <th>#</th><th>Nom</th><th>Prénom</th><th>Email</th><th>Poste</th>
-                <th>Heures</th><th>Salaire</th><th>Mot de passe</th><th>Rôle</th><th>Actions</th>
+                <th>#</th><th>Nom</th><th>Prénom</th><th>Email</th>
+                <th>Poste</th><th>Heures</th><th>Salaire</th>
+                <th>MDP</th><th>Abilités</th><th>Actions</th>
             </tr>
             </thead>
 
             <tbody id="employeeTableBody">
+
+            <!-- EMPLOYÉS -->
             <tr th:each="emp : ${employees}" th:id="'row-' + ${emp.id}">
                 <td th:text="${emp.id}" class="emp-id"></td>
                 <td th:text="${emp.lastName}" class="emp-lastName"></td>
@@ -44,7 +68,7 @@
                 <td th:text="${emp.hours}" class="emp-hours"></td>
                 <td th:text="${emp.salary}" class="emp-salary"></td>
 
-                <!-- Masqué par défaut -->
+                <!-- Mot de passe masqué -->
                 <td class="emp-mdp">
                     ••••••
                     <span class="real-mdp" th:text="${emp.mdp}" style="display:none;"></span>
@@ -53,30 +77,91 @@
                 <td th:text="${emp.abilities}" class="emp-abilities"></td>
 
                 <td class="action-buttons">
+                    <!-- NOUVEAU : Bouton Voir les PDFs -->
+                    <button class="btn btn-primary btn-sm-wide"
+                            onclick="togglePayslips(this)"
+                            th:data-id="${emp.id}">
+                        Voir PDF
+                    </button>
+
                     <button class="btn btn-warning btn-sm-wide" onclick="enableEdit(this)">Modifier</button>
                     <button class="btn btn-danger btn-sm-wide" onclick="deleteEmployee(this)">Supprimer</button>
                 </td>
             </tr>
 
+            <!-- Si aucun employé -->
             <tr th:if="${#lists.isEmpty(employees)}">
                 <td colspan="10" class="text-center">Aucun employé</td>
             </tr>
+
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    /* ------------------------------------------------ */
-    /* --------- MODE MODIFICATION EMPLOYÉ ------------ */
-    /* ------------------------------------------------ */
+    /* ========================================================= */
+    /* ============== AFFICHAGE DES FICHES DE PAIE ============= */
+    /* ========================================================= */
+    function togglePayslips(button) {
+        const id = button.dataset.id;
+
+        let existing = document.getElementById("pdf-panel-" + id);
+
+        // Si existe déjà → simple toggle
+        if (existing) {
+            existing.style.display = existing.style.display === "none" ? "block" : "none";
+            return;
+        }
+
+        // Sinon → appel API et affichage
+        fetch("http://localhost:8080/api/payslips/employee/" + id)
+            .then(res => res.json())
+            .then(list => {
+                const row = button.closest("tr");
+
+                const container = document.createElement("tr");
+                container.innerHTML = `
+                    <td colspan="10">
+                        <div class="pdf-panel" id="pdf-panel-${id}">
+                            <h5>Fiches de paie :</h5>
+                            <div id="pdf-list-${id}"></div>
+                        </div>
+                    </td>`;
+                row.after(container);
+
+                const listDiv = document.getElementById("pdf-list-" + id);
+
+                if (list.length === 0) {
+                    listDiv.innerHTML = "<p>Aucun PDF trouvé.</p>";
+                    return;
+                }
+
+                list.forEach(p => {
+                    listDiv.innerHTML += `
+                        <div class="pdf-row">
+                            <strong>${p.month}</strong>
+                            <div>
+                                <a class="btn btn-info btn-sm-wide" href="${p.urlPdf}" target="_blank">Voir</a>
+                                <a class="btn btn-success btn-sm-wide" href="${p.urlPdf}" download>Télécharger</a>
+                            </div>
+                        </div>`;
+                });
+
+                document.getElementById("pdf-panel-" + id).style.display = "block";
+            });
+    }
+
+
+    /* ========================================================= */
+    /* === TON CODE EXISTANT (modifier/supprimer/ajouter) ======= */
+    /* ========================================================= */
 
     function enableEdit(button) {
         const row = button.closest('tr');
         const id = row.querySelector('.emp-id').textContent.trim();
 
-        // On masque le bouton supprimer
-        row.querySelector(".action-buttons").querySelectorAll('button')[1].style.display = "none";
+        row.querySelector(".action-buttons").querySelectorAll('button')[2].style.display = "none";
 
         const mdpReal = row.querySelector(".real-mdp").textContent.trim();
 
@@ -97,11 +182,9 @@
             }
         });
 
-        // mot de passe → AFFICHÉ EN CLAIR
         const mdpTd = row.querySelector('.emp-mdp');
         mdpTd.innerHTML = `<input class="form-control-inline" name="mdp" value="${mdpReal}">`;
 
-        // Ajout du bouton ANNULER (gris)
         const actions = row.querySelector('.action-buttons');
         const cancelBtn = document.createElement("button");
         cancelBtn.className = "btn btn-secondary btn-sm-wide";
@@ -109,7 +192,6 @@
         cancelBtn.onclick = () => window.location.reload();
         actions.appendChild(cancelBtn);
 
-        // transformation du bouton modifier → valider
         button.textContent = 'Valider';
         button.classList.replace('btn-warning','btn-success');
         button.onclick = () => validateEdit(id, row);
@@ -125,8 +207,8 @@
             job: inputs[3].value,
             hours: inputs[4].value,
             salary: inputs[5].value,
-            abilities: inputs[6].value,
-            mdp: inputs[7].value
+            mdp: inputs[6].value,
+            abilities: inputs[7].value
         };
 
         fetch(`/employees/update/${id}`, {
@@ -134,13 +216,9 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
-        .then(res => res.ok ? window.location.reload() : alert("Erreur lors de la mise à jour"))
-        .catch(() => alert("Erreur réseau"));
+            .then(res => res.ok ? window.location.reload() : alert("Erreur mise à jour"))
+            .catch(() => alert("Erreur réseau"));
     }
-
-    /* ------------------------------------------------ */
-    /* ------------------ SUPPRESSION ----------------- */
-    /* ------------------------------------------------ */
 
     function deleteEmployee(button) {
         const row = button.closest('tr');
@@ -151,10 +229,6 @@
             .then(res => res.ok ? window.location.reload() : alert("Erreur suppression"))
             .catch(() => alert("Erreur réseau"));
     }
-
-    /* ------------------------------------------------ */
-    /* ---------- AJOUT D’UN NOUVEL EMPLOYÉ ----------- */
-    /* ------------------------------------------------ */
 
     document.getElementById('addEmployeeBtn').onclick = () => {
         if (document.getElementById('new-employee-row')) return;
@@ -212,9 +286,10 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
-        .then(res => res.ok ? window.location.reload() : alert("Erreur création"))
-        .catch(() => alert("Erreur réseau"));
+            .then(res => res.ok ? window.location.reload() : alert("Erreur création"))
+            .catch(() => alert("Erreur réseau"));
     }
 </script>
+
 </body>
 </html>

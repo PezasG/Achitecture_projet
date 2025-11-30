@@ -7,5 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class DashboardController {
 
     @GetMapping("/dashboard_employe")
-    public String showDashboard() { return "dashboard_employe";}
+    public String showDashboardEmploye() {
+        return "dashboard_employe"; // retourne correctement la vue Thymeleaf
+    }
 }

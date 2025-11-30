@@ -1,25 +1,24 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Espace Employé — Tableau de bord</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
     <style>
         body {
             background: linear-gradient(135deg,#6a11cb,#2575fc);
             color: white;
             min-height: 100vh;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
             padding-top: 50px;
         }
 
         .card {
             border-radius: 14px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-            background: #ffffff;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            background: #fff;
             color: #333;
         }
 
@@ -28,43 +27,8 @@
             border-radius: 24px;
         }
 
-        .btn-logout {
-            padding: 8px 20px;
-            border-radius: 24px;
-            font-weight: bold;
-        }
-
-        /* Onglets */
-        .nav-tabs {
-            border-bottom: none;
-        }
-        .nav-tabs .nav-link {
-            color: #333;
-            background: #e9ecef;
-            border-radius: 14px 14px 0 0;
-            margin-right: 4px;
-            font-weight: 500;
-        }
-        .nav-tabs .nav-link.active {
-            background: white;
-            color: #2575fc;
-            border: 2px solid #ffffff;
-            border-bottom: none;
-        }
-
-        /* Table */
-        .table-hover tbody tr:hover {
-            background-color: #eef5ff;
-        }
-
-        .info-label {
-            font-weight: bold;
-            color: #444;
-        }
-
-        .info-value {
-            color: #111;
-        }
+        .info-label { font-weight: bold; color: #444; }
+        .info-value { color: #111; }
     </style>
 </head>
 
@@ -74,17 +38,15 @@
 
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-4 text-white">
-        <h2 class="mb-0">Bonjour, Paul Dupont</h2>
-        <a href="/" class="btn btn-danger btn-wide">
-            Déconnexion
-        </a>
+        <h2 id="employeeName" class="mb-0">Bonjour</h2>
+        <a href="/" class="btn btn-danger btn-wide">Déconnexion</a>
     </div>
 
-    <!-- CARD AVEC ONGLETS -->
+    <!-- CARD -->
     <div class="card p-4">
 
-        <!-- NAVIGATION ONGLET -->
-        <ul class="nav nav-tabs mb-4" id="employeeTabs">
+        <!-- ONGLET -->
+        <ul class="nav nav-tabs mb-4">
             <li class="nav-item">
                 <a class="nav-link active" data-toggle="tab" href="#infos">Informations</a>
             </li>
@@ -93,42 +55,37 @@
             </li>
         </ul>
 
-        <!-- CONTENU ONGLET -->
         <div class="tab-content">
 
-            <!-- ONGLET INFORMATIONS -->
+            <!-- INFO -->
             <div class="tab-pane fade show active" id="infos">
-
                 <h4 class="mb-3">Vos informations personnelles</h4>
 
                 <div class="row">
-                    <div class="col-md-6 mb-2"><span class="info-label">Nom :</span> <span class="info-value">Dupont</span></div>
-                    <div class="col-md-6 mb-2"><span class="info-label">Prénom :</span> <span class="info-value">Paul</span></div>
-                    <div class="col-md-6 mb-2"><span class="info-label">Email :</span> <span class="info-value">p.dupont@example.com</span></div>
-                    <div class="col-md-6 mb-2"><span class="info-label">Poste :</span> <span class="info-value">Développeur</span></div>
-                    <div class="col-md-6 mb-2"><span class="info-label">Heures :</span> <span class="info-value">35 h</span></div>
-                    <div class="col-md-6 mb-2"><span class="info-label">Salaire :</span> <span class="info-value">2500 €</span></div>
-                    <div class="col-md-6 mb-2"><span class="info-label">Mot de passe :</span> <span class="info-value">Toto123</span></div>
-                    <div class="col-md-6 mb-2"><span class="info-label">Rôle :</span> <span class="info-value">Employé</span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Nom :</span> <span id="info-lastName"></span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Prénom :</span> <span id="info-firstName"></span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Email :</span> <span id="info-email"></span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Poste :</span> <span id="info-job"></span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Heures :</span> <span id="info-hours"></span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Salaire :</span> <span id="info-salary"></span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Mot de passe :</span> <span id="info-mdp"></span></div>
+                    <div class="col-md-6 mb-2"><span class="info-label">Rôle :</span> <span id="info-role"></span></div>
                 </div>
             </div>
 
-            <!-- ONGLET FICHES DE PAIE -->
+            <!-- FICHES DE PAIE -->
             <div class="tab-pane fade" id="paie">
-
                 <h4 class="mb-3">Vos fiches de paie</h4>
 
                 <table class="table table-hover">
                     <thead class="thead-light">
                     <tr>
-                        <th>Fichier</th>
+                        <th>Mois</th>
+                        <th>Salaire Net</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
-
-                    <tbody id="list_of_pdf">
-                    <!-- Rempli par JS -->
-                    </tbody>
+                    <tbody id="list_of_pdf"></tbody>
                 </table>
             </div>
 
@@ -136,39 +93,84 @@
     </div>
 </div>
 
-
-<!-- SCRIPTS -->
+<!-- LIBS -->
 <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
 <script>
 
-    // Liste fictive — sera remplacée par ton backend
-    const folder = "list_of_pdf/";
-    const list_of_pdf = [
-        "payslip_EMP001_2025-01.pdf",
-        "fevrier_2025.pdf",
-        "mars_2025.pdf",
-        "avril_2025.pdf"
-    ];
+    /* ---------------------- CHARGEMENT COMPLET DU DASHBOARD ---------------------- */
+    async function loadEmployeeDashboard() {
 
-    const tbody = document.getElementById("list_of_pdf");
+        const stored = localStorage.getItem("employee");
 
-    list_of_pdf.forEach(file => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td>${file}</td>
-            <td>
-                <a href="${folder}${file}" target="_blank"
-                   class="btn btn-sm btn-primary btn-wide">Voir</a>
+        if (!stored) {
+            alert("Aucun utilisateur connecté");
+            window.location.href = "/";
+            return;
+        }
 
-                <a href="${folder}${file}" download
-                   class="btn btn-sm btn-outline-secondary btn-wide">⬇️ Télécharger</a>
-            </td>
-        `;
-        tbody.appendChild(tr);
-    });
+        const emp = JSON.parse(stored);
+        const id = emp.id;
+
+        /* ---------- RÉCUPÉRER LES INFORMATIONS DE L'EMPLOYÉ ---------- */
+        const res = await fetch(`http://localhost:8080/api/employees/get/${id}`);
+        const employee = await res.json();
+
+        document.getElementById("employeeName").innerText = "Bonjour, " + employee.firstName;
+
+        document.getElementById("info-lastName").innerText = employee.lastName;
+        document.getElementById("info-firstName").innerText = employee.firstName;
+        document.getElementById("info-email").innerText = employee.email;
+        document.getElementById("info-job").innerText = employee.job;
+        document.getElementById("info-hours").innerText = employee.hours;
+        document.getElementById("info-salary").innerText = employee.salary + " €";
+        document.getElementById("info-mdp").innerText = employee.mdp;
+        document.getElementById("info-role").innerText = employee.abilities;
+
+        /* ---------- CHARGER LES FICHES DE PAIE ---------- */
+        loadPayslips(id);
+    }
+
+    /* ---------------------- FICHES DE PAIE ---------------------- */
+    async function loadPayslips(id) {
+
+        const tbody = document.getElementById("list_of_pdf");
+        tbody.innerHTML = "";
+
+        const res = await fetch(`http://localhost:8080/api/payslips/employee/${id}`);
+        const payslips = await res.json();
+
+        if (!payslips || payslips.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center text-muted">
+                        Aucune fiche de paie trouvée
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        payslips.forEach(p => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${p.month}</td>
+                <td>${p.netSalary} €</td>
+                <td>
+                    <a href="${p.urlPdf}" target="_blank"
+                       class="btn btn-primary btn-sm btn-wide">Voir</a>
+
+                    <a href="${p.urlPdf}" download
+                       class="btn btn-outline-secondary btn-sm btn-wide">Télécharger</a>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+    }
+
+    /* ---------------------- LANCEMENT ---------------------- */
+    loadEmployeeDashboard();
 
 </script>
 

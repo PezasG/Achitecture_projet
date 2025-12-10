@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <title>Gestion des employés</title>
@@ -14,7 +14,6 @@
         input.form-control-inline, select.form-control-inline { width: 100%; padding: 2px 6px; font-size: 0.9rem; }
         .action-buttons { display: flex; gap: 6px; align-items: center; }
 
-        /* NOUVEAU : panneau PDF */
         .pdf-panel {
             background: #f8f9fa;
             color: black;
@@ -38,6 +37,8 @@
 
 <body>
 <div class="container">
+
+    <!-- BARRE HAUT -->
     <div class="top-bar">
         <h2>Espace RH — Employés</h2>
         <div>
@@ -46,6 +47,7 @@
         </div>
     </div>
 
+    <!-- TABLEAU -->
     <div class="card bg-light text-dark p-3">
         <table class="table table-striped">
             <thead class="thead-light">
@@ -57,149 +59,158 @@
             </thead>
 
             <tbody id="employeeTableBody">
-
-            <!-- EMPLOYÉS -->
-            <tr th:each="emp : ${employees}" th:id="'row-' + ${emp.id}">
-                <td th:text="${emp.id}" class="emp-id"></td>
-                <td th:text="${emp.lastName}" class="emp-lastName"></td>
-                <td th:text="${emp.firstName}" class="emp-firstName"></td>
-                <td th:text="${emp.email}" class="emp-email"></td>
-                <td th:text="${emp.job}" class="emp-job"></td>
-                <td th:text="${emp.hours}" class="emp-hours"></td>
-                <td th:text="${emp.salary}" class="emp-salary"></td>
-
-                <!-- Mot de passe masqué -->
-                <td class="emp-mdp">
-                    ••••••
-                    <span class="real-mdp" th:text="${emp.mdp}" style="display:none;"></span>
-                </td>
-
-                <td th:text="${emp.abilities}" class="emp-abilities"></td>
-
-                <td class="action-buttons">
-                    <!-- NOUVEAU : Bouton Voir les PDFs -->
-                    <button class="btn btn-primary btn-sm-wide"
-                            onclick="togglePayslips(this)"
-                            th:data-id="${emp.id}">
-                        Voir PDF
-                    </button>
-
-                    <button class="btn btn-warning btn-sm-wide" onclick="enableEdit(this)">Modifier</button>
-                    <button class="btn btn-danger btn-sm-wide" onclick="deleteEmployee(this)">Supprimer</button>
-                </td>
-            </tr>
-
-            <!-- Si aucun employé -->
-            <tr th:if="${#lists.isEmpty(employees)}">
-                <td colspan="10" class="text-center">Aucun employé</td>
-            </tr>
-
+            <tr><td colspan="10" class="text-center text-dark">Chargement...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    /* ========================================================= */
-    /* ============== AFFICHAGE DES FICHES DE PAIE ============= */
-    /* ========================================================= */
-    function togglePayslips(button) {
-        const id = button.dataset.id;
+    /* ======================= CHARGEMENT ====================== */
+    loadEmployees();
 
-        let existing = document.getElementById("pdf-panel-" + id);
-
-        // Si existe déjà → simple toggle
-        if (existing) {
-            existing.style.display = existing.style.display === "none" ? "block" : "none";
-            return;
-        }
-
-        // Sinon → appel API et affichage
-        fetch("http://localhost:8080/api/payslips/employee/" + id)
+    function loadEmployees() {
+        fetch("http://localhost:8080/api/employees/all")
             .then(res => res.json())
-            .then(list => {
-                const row = button.closest("tr");
-
-                const container = document.createElement("tr");
-                container.innerHTML = `
-                    <td colspan="10">
-                        <div class="pdf-panel" id="pdf-panel-${id}">
-                            <h5>Fiches de paie :</h5>
-                            <div id="pdf-list-${id}"></div>
-                        </div>
-                    </td>`;
-                row.after(container);
-
-                const listDiv = document.getElementById("pdf-list-" + id);
-
-                if (list.length === 0) {
-                    listDiv.innerHTML = "<p>Aucun PDF trouvé.</p>";
-                    return;
-                }
-
-                list.forEach(p => {
-                    listDiv.innerHTML += `
-                        <div class="pdf-row">
-                            <strong>${p.month}</strong>
-                            <div>
-                                <a class="btn btn-info btn-sm-wide" href="${p.urlPdf}" target="_blank">Voir</a>
-                                <a class="btn btn-success btn-sm-wide" href="${p.urlPdf}" download>Télécharger</a>
-                            </div>
-                        </div>`;
-                });
-
-                document.getElementById("pdf-panel-" + id).style.display = "block";
+            .then(data => renderEmployees(data))
+            .catch(() => {
+                document.getElementById("employeeTableBody").innerHTML =
+                    "<tr><td colspan='10' class='text-center text-dark'>Erreur chargement API</td></tr>";
             });
     }
 
+    /* ======================= AFFICHAGE ======================== */
+    function renderEmployees(list) {
+        const tbody = document.getElementById("employeeTableBody");
+        tbody.innerHTML = "";
 
-    /* ========================================================= */
-    /* === TON CODE EXISTANT (modifier/supprimer/ajouter) ======= */
-    /* ========================================================= */
+        if (list.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='10' class='text-center'>Aucun employé</td></tr>";
+            return;
+        }
 
+        list.forEach(emp => {
+            const tr = document.createElement("tr");
+            tr.dataset.id = emp.id;
+
+            tr.innerHTML = `
+                <td>${emp.id}</td>
+                <td class="emp-lastName">${emp.lastName}</td>
+                <td class="emp-firstName">${emp.firstName}</td>
+                <td class="emp-email">${emp.email}</td>
+                <td class="emp-job">${emp.job}</td>
+                <td class="emp-hours">${emp.hours}</td>
+                <td class="emp-salary">${emp.salary}</td>
+                <td class="emp-mdp">••••••<span class="real-mdp" style="display:none;">${emp.mdp}</span></td>
+                <td class="emp-abilities">${emp.abilities}</td>
+                <td class="action-buttons">
+                    <button class="btn btn-primary btn-sm-wide" onclick="togglePayslips(${emp.id})">Voir PDF</button>
+                    <button class="btn btn-warning btn-sm-wide" onclick="enableEdit(this)">Modifier</button>
+                    <button class="btn btn-danger btn-sm-wide" onclick="deleteEmployee(this)">Supprimer</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    /* ==================== FICHES DE PAIES ===================== */
+    function togglePayslips(empId) {
+        const existing = document.getElementById("pdf-panel-" + empId);
+        if (existing) { existing.style.display = existing.style.display==="none"?"block":"none"; return; }
+
+        fetch(`http://localhost:8080/api/payslips/employee/${empId}`)
+            .then(res => res.json())
+            .then(list => {
+                const row = document.querySelector(`tr[data-id="${empId}"]`);
+                const container = document.createElement("tr");
+                container.innerHTML = `
+                    <td colspan="10">
+                        <div class="pdf-panel" id="pdf-panel-${empId}">
+                            <h5>Fiches de paie :</h5>
+                            <div id="pdf-list-${empId}"></div>
+                            <button class="btn btn-success btn-sm mt-2" onclick="generatePayslip(${empId})">+ Générer une nouvelle fiche</button>
+                        </div>
+                    </td>
+                `;
+                row.after(container);
+
+                const listDiv = document.getElementById(`pdf-list-${empId}`);
+                listDiv.innerHTML = "";
+
+                if (list.length === 0) listDiv.innerHTML = "<p>Aucune fiche de paie trouvée.</p>";
+                else {
+                    list.forEach(p => {
+                        listDiv.innerHTML += `
+                            <div class="pdf-row">
+                                <strong>${p.month}</strong>
+                                <div>
+                                    <a class="btn btn-info btn-sm-wide" href="http://localhost:8080/api/payslips/download/${p.id}" target="_blank" rel="noopener noreferrer">Voir / Télécharger</a>
+                                    <button class="btn btn-danger btn-sm-wide" onclick="deletePayslip(${p.id}, ${empId})">Supprimer</button>
+                                </div>
+                            </div>`;
+                    });
+                }
+                document.getElementById(`pdf-panel-${empId}`).style.display = "block";
+            });
+    }
+
+    function generatePayslip(empId) {
+        const month = prompt("Mois (format YYYY-MM) :");
+        if (!month) return;
+
+        fetch(`http://localhost:8080/api/payslips/create`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ employeeId: empId, month: month })
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Erreur création fiche");
+            return res.json();
+        })
+        .then(() => {
+            document.getElementById(`pdf-panel-${empId}`)?.remove();
+            togglePayslips(empId);
+        })
+        .catch(() => alert("Erreur génération fiche"));
+    }
+
+    function deletePayslip(pId, empId) {
+        if (!confirm("Supprimer cette fiche ?")) return;
+
+        fetch(`http://localhost:8080/api/payslips/delete/${pId}`, { method:"DELETE" })
+            .then(() => {
+                document.getElementById(`pdf-panel-${empId}`)?.remove();
+                togglePayslips(empId);
+            })
+            .catch(() => alert("Erreur suppression fiche"));
+    }
+
+    /* ======================= MODIFIER ========================= */
     function enableEdit(button) {
-        const row = button.closest('tr');
-        const id = row.querySelector('.emp-id').textContent.trim();
-
-        row.querySelector(".action-buttons").querySelectorAll('button')[2].style.display = "none";
-
+        const row = button.closest("tr");
         const mdpReal = row.querySelector(".real-mdp").textContent.trim();
+        const fields = ["lastName","firstName","email","job","hours","salary","abilities"];
 
-        const fields = ['lastName','firstName','email','job','hours','salary','abilities'];
-
-        fields.forEach(field => {
-            const td = row.querySelector(`.emp-${field}`);
-            const value = td.textContent.trim();
-
-            if (field === "abilities") {
-                td.innerHTML = `
-                    <select name="abilities" class="form-control-inline">
-                        <option value="EMPLOYE" ${value === 'EMPLOYE' ? 'selected' : ''}>EMPLOYE</option>
-                        <option value="RH" ${value === 'RH' ? 'selected' : ''}>RH</option>
-                    </select>`;
-            } else {
-                td.innerHTML = `<input class="form-control-inline" name="${field}" value="${value}">`;
-            }
+        fields.forEach(f => {
+            const cell = row.querySelector(".emp-" + f);
+            const val = cell.textContent.trim();
+            if (f === "abilities") {
+                cell.innerHTML = `<select class="form-control-inline">
+                    <option value="EMPLOYE" ${val==="EMPLOYE"?"selected":""}>EMPLOYE</option>
+                    <option value="RH" ${val==="RH"?"selected":""}>RH</option>
+                </select>`;
+            } else cell.innerHTML = `<input class="form-control-inline" value="${val}">`;
         });
 
-        const mdpTd = row.querySelector('.emp-mdp');
-        mdpTd.innerHTML = `<input class="form-control-inline" name="mdp" value="${mdpReal}">`;
+        row.querySelector(".emp-mdp").innerHTML = `<input class="form-control-inline" value="${mdpReal}">`;
 
-        const actions = row.querySelector('.action-buttons');
-        const cancelBtn = document.createElement("button");
-        cancelBtn.className = "btn btn-secondary btn-sm-wide";
-        cancelBtn.textContent = "Annuler";
-        cancelBtn.onclick = () => window.location.reload();
-        actions.appendChild(cancelBtn);
-
-        button.textContent = 'Valider';
-        button.classList.replace('btn-warning','btn-success');
-        button.onclick = () => validateEdit(id, row);
+        button.textContent = "Valider";
+        button.classList.replace("btn-warning","btn-success");
+        button.onclick = () => validateEdit(row.dataset.id, row);
     }
 
     function validateEdit(id, row) {
-        const inputs = row.querySelectorAll('input, select');
-
+        const inputs = row.querySelectorAll("input, select");
         const data = {
             lastName: inputs[0].value,
             firstName: inputs[1].value,
@@ -210,44 +221,34 @@
             mdp: inputs[6].value,
             abilities: inputs[7].value
         };
-
-        fetch(`/employees/update/${id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-            .then(res => res.ok ? window.location.reload() : alert("Erreur mise à jour"))
-            .catch(() => alert("Erreur réseau"));
+        fetch(`http://localhost:8080/api/employees/update/${id}`, {
+            method:"PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify(data)
+        }).then(() => loadEmployees()).catch(() => alert("Erreur mise à jour"));
     }
 
+    /* ======================= SUPPRIMER EMPLOYE ======================== */
     function deleteEmployee(button) {
-        const row = button.closest('tr');
-        const id = row.querySelector('.emp-id').textContent.trim();
-        if (!confirm('Confirmer la suppression ?')) return;
-
-        fetch(`/employees/delete/${id}`, { method: 'DELETE' })
-            .then(res => res.ok ? window.location.reload() : alert("Erreur suppression"))
-            .catch(() => alert("Erreur réseau"));
+        const id = button.closest("tr").dataset.id;
+        if (!confirm("Supprimer cet employé ?")) return;
+        fetch(`http://localhost:8080/api/employees/delete/${id}`, { method:"DELETE" }).then(() => loadEmployees());
     }
 
-    document.getElementById('addEmployeeBtn').onclick = () => {
-        if (document.getElementById('new-employee-row')) return;
-
-        const table = document.getElementById('employeeTableBody');
-        const row = document.createElement('tr');
-        row.id = 'new-employee-row';
-
+    /* ===================== AJOUTER EMPLOYE =========================== */
+    document.getElementById("addEmployeeBtn").onclick = () => {
+        if (document.getElementById("new-employee-row")) return;
+        const tbody = document.getElementById("employeeTableBody");
+        const row = document.createElement("tr"); row.id="new-employee-row";
         row.innerHTML = `
             <td>—</td>
-            <td><input name="lastName" class="form-control-inline"></td>
-            <td><input name="firstName" class="form-control-inline"></td>
-            <td><input name="email" class="form-control-inline"></td>
-            <td><input name="job" class="form-control-inline"></td>
-            <td><input name="hours" class="form-control-inline"></td>
-            <td><input name="salary" class="form-control-inline"></td>
-            <td><input name="mdp" class="form-control-inline"></td>
+            <td><input class="form-control-inline"></td>
+            <td><input class="form-control-inline"></td>
+            <td><input class="form-control-inline"></td>
+            <td><input class="form-control-inline"></td>
+            <td><input class="form-control-inline"></td>
+            <td><input class="form-control-inline"></td>
+            <td><input class="form-control-inline"></td>
             <td>
-                <select name="abilities" class="form-control-inline">
+                <select class="form-control-inline">
                     <option value="EMPLOYE">EMPLOYE</option>
                     <option value="RH">RH</option>
                 </select>
@@ -255,21 +256,14 @@
             <td class="action-buttons">
                 <button class="btn btn-success btn-sm-wide" onclick="submitNewEmployee(this)">Ajouter</button>
                 <button class="btn btn-secondary btn-sm-wide" onclick="cancelNewEmployee()">Annuler</button>
-            </td>
-        `;
-
-        table.prepend(row);
+            </td>`;
+        tbody.prepend(row);
     };
 
-    function cancelNewEmployee() {
-        const r = document.getElementById('new-employee-row');
-        if (r) r.remove();
-    }
+    function cancelNewEmployee() { document.getElementById("new-employee-row")?.remove(); }
 
     function submitNewEmployee(button) {
-        const row = button.closest('tr');
-        const inputs = row.querySelectorAll('input, select');
-
+        const inputs = button.closest("tr").querySelectorAll("input, select");
         const data = {
             lastName: inputs[0].value,
             firstName: inputs[1].value,
@@ -280,16 +274,10 @@
             mdp: inputs[6].value,
             abilities: inputs[7].value
         };
-
-        fetch('/employees/save', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-            .then(res => res.ok ? window.location.reload() : alert("Erreur création"))
-            .catch(() => alert("Erreur réseau"));
+        fetch("http://localhost:8080/api/employees/save", {
+            method:"POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(data)
+        }).then(() => loadEmployees()).catch(() => alert("Erreur création"));
     }
 </script>
-
 </body>
 </html>

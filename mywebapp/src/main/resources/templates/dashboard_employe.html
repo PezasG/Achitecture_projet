@@ -157,19 +157,13 @@
                 <td>${p.month}</td>
                 <td>${p.netSalary} €</td>
                 <td>
-                    <a href="${p.urlPdf}" target="_blank"
-                       class="btn btn-primary btn-sm btn-wide">Voir</a>
-
-                    <a href="${p.urlPdf}" download
-                       class="btn btn-outline-secondary btn-sm btn-wide">Télécharger</a>
+                    <a href="http://localhost:8080/api/payslips/download/${p.id}" target="_blank" class="btn btn-primary">Voir | ⬇ Télécharger</a>
                 </td>
             `;
             tbody.appendChild(tr);
         });
 
     }
-
-    /* ---------------------- LANCEMENT ---------------------- */
     loadEmployeeDashboard();
 
 </script>

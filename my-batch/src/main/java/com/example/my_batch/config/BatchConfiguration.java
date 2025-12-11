@@ -1,194 +1,248 @@
 package com.example.my_batch.config;
 
-import com.example.my_batch.model.Product;
-import com.example.my_batch.repository.ProductRepository;
+import com.example.my_batch.model.Employee;
+import com.example.my_batch.model.Payslip;
+import com.example.my_batch.repository.EmployeeRepository;
+import com.example.my_batch.repository.PayslipRepository;
+import com.example.my_batch.util.EmailUtil;
+import jakarta.persistence.EntityManagerFactory;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.springframework.batch.core.Job;
-import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.JobLocator;
+import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
+import org.springframework.batch.core.job.SimpleJob;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.batch.core.job.SimpleJob;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.item.ItemProcessor;
 import org.springframework.batch.item.ItemWriter;
-import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
-import org.springframework.batch.item.file.mapping.DefaultLineMapper;
-import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.batch.item.database.JpaPagingItemReader;
 import org.springframework.batch.item.database.builder.JpaPagingItemReaderBuilder;
-import org.springframework.batch.item.file.FlatFileItemWriter;
-import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
-import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
-import org.springframework.core.io.FileSystemResource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.boot.CommandLineRunner;
 
-import jakarta.persistence.EntityManagerFactory;
+import java.io.File;
+import java.time.LocalDate;
+import java.util.stream.StreamSupport;
+
 @Configuration
 @EnableBatchProcessing
+@EnableScheduling
 public class BatchConfiguration {
 
-    private final ProductRepository productRepository;
-    private final JobRepository jobRepository;
-    private final PlatformTransactionManager transactionManager;
-    private final JobLauncher jobLauncher;
-    private final EntityManagerFactory entityManagerFactory;
+    @Autowired
+    private JobRepository jobRepository;
 
-    public BatchConfiguration(ProductRepository productRepository, JobRepository jobRepository,
-                              PlatformTransactionManager transactionManager,
-                              JobLauncher jobLauncher,
-                              EntityManagerFactory entityManagerFactory) {
-        this.productRepository = productRepository;
-        this.jobRepository = jobRepository;
-        this.transactionManager = transactionManager;
-        this.jobLauncher = jobLauncher;
-        this.entityManagerFactory = entityManagerFactory;
+    @Autowired
+    private PlatformTransactionManager transactionManager;
+
+    @Autowired
+    private EntityManagerFactory entityManagerFactory;
+
+    @Autowired
+    private JobLauncher jobLauncher;
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
+    @Autowired
+    private PayslipRepository payslipRepository;
+
+    // ------------------ READER ------------------
+    @Bean
+    public JpaPagingItemReader<Employee> employeeReader() {
+        return new JpaPagingItemReaderBuilder<Employee>()
+                .name("employeeReader")
+                .entityManagerFactory(entityManagerFactory)
+                .queryString("SELECT e FROM Employee e")
+                .pageSize(20)
+                .build();
     }
 
-    // 1. FlatFileItemReader to read CSV file
-    @Bean(name = "reader")
-    public FlatFileItemReader<Product> reader() {
-        FlatFileItemReader<Product> reader = new FlatFileItemReader<>();
-        reader.setResource(new ClassPathResource("products.csv"));
-        reader.setLinesToSkip(1); // Skip header line
+    // ------------------ PROCESSOR ------------------
+    @Bean
+    public ItemProcessor<Employee, Payslip> payslipProcessor() {
+        return employee -> {
+            try {
+                String month = LocalDate.now().getYear() + "-" + String.format("%02d", LocalDate.now().getMonthValue());
 
-        DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();
-        tokenizer.setNames("id", "name", "price"); // Matches CSV columns to Product fields
+                double gross = employee.getSalary();
+                double net = gross * 0.8;
 
-        BeanWrapperFieldSetMapper<Product> fieldSetMapper = new BeanWrapperFieldSetMapper<>();
-        fieldSetMapper.setTargetType(Product.class);
+                Payslip p = new Payslip();
+                p.setMonth(month);
+                p.setGrossSalary(gross);
+                p.setNetSalary(net);
+                p.setEmployee(employee);
 
-        DefaultLineMapper<Product> lineMapper = new DefaultLineMapper<>();
-        lineMapper.setLineTokenizer(tokenizer);
-        lineMapper.setFieldSetMapper(fieldSetMapper);
+                Payslip saved = payslipRepository.save(p);
 
-        reader.setLineMapper(lineMapper);
-        return reader;
-    }
+                String pdfPath = generatePdf(saved);
 
-    // 2. ItemProcessor to process each Product (optional, in this case it just passes the data through)
-    @Bean(name = "processor")
-    public ItemProcessor<Product, Product> processor() {
-        return product -> {
-            final double DISCOUNT_THRESHOLD = 100.0;
-            final double DISCOUNT_RATE = 0.1;
+                saved.setUrlPdf(pdfPath);
+                Payslip finalSaved = payslipRepository.save(saved);
 
-            if (product.getPrice() > DISCOUNT_THRESHOLD){
-                double originalPrice = product.getPrice();
-                product.setPrice(originalPrice*(1-DISCOUNT_RATE));
-                System.out.println("Appliqué une réduction au produit : " + product.getName() +
-                        " - ancien prix : " + originalPrice + ", nouveau prix : " + product.getPrice());
+                // Envoi mail
+                try {
+                    EmailUtil.sendPayslipEmailWithAttachment(mailSender, employee.getEmail(),
+                            "Votre fiche de paie — " + month,
+                            "Bonjour " + employee.getFirstName() + ",\n\nVeuillez trouver ci-joint votre fiche de paie du mois " + month + ".\n\nCordialement,\nRH",
+                            pdfPath);
+                } catch (Exception ex) {
+                    System.err.println("Erreur envoi mail à " + employee.getEmail() + " : " + ex.getMessage());
+                }
+
+                return finalSaved;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
             }
-            return product;
         };
     }
 
-    // 3. ItemWriter to save Product to the database
-    @Bean(name = "writer")
-    public ItemWriter<Product> writer() {
-        return products -> productRepository.saveAll(products);
+    // ------------------ WRITER ------------------
+    @Bean
+    public ItemWriter<Payslip> payslipWriter() {
+        return items -> {
+            long count = StreamSupport.stream(items.spliterator(), false).filter(x -> x != null).count();
+            System.out.println("Batch : " + count + " fiches traitées.");
+        };
     }
 
-    // 4. Step to process the data using the reader, processor, and writer
-    @Bean(name = "productStep")
-    public Step productStep() {
-        return new StepBuilder("productStep", jobRepository)
-                .<Product, Product>chunk(10, transactionManager) // Processing 10 items at a time
-                .reader(reader())
-                .processor(processor())
-                .writer(writer())
+    // ------------------ STEP ------------------
+    @Bean
+    public Step generatePayslipsStep() {
+        return new StepBuilder("generatePayslipsStep", jobRepository)
+                .<Employee, Payslip>chunk(20, transactionManager)
+                .reader(employeeReader())
+                .processor(payslipProcessor())
+                .writer(payslipWriter())
                 .transactionManager(transactionManager)
                 .build();
     }
 
-    // 5. Job to execute the batch process
-    @Bean(name = "importProductJob")
-    public Job importProductJob() {
-        SimpleJob job = new SimpleJob("importJob");
-        job.setName("importJob");
-        job.setJobRepository(jobRepository);
-        job.addStep(productStep());
-        return job;
-    }
-
-
-    @Bean(name = "dbReader")
-    public JpaPagingItemReader<Product> dbReader(EntityManagerFactory entityManagerFactory) {
-        return new JpaPagingItemReaderBuilder<Product>()
-                .name("productDbReader")
-                .entityManagerFactory(entityManagerFactory)
-                .queryString("SELECT p FROM Product p")
-                .pageSize(10)
-                .build();
-    }
-
-
-    @Bean(name = "csvWriter")
-    public FlatFileItemWriter<Product> csvWriter() {
-        FlatFileItemWriter<Product> writer = new FlatFileItemWriter<>();
-
-        writer.setResource(new FileSystemResource("products_export.csv"));
-        writer.setHeaderCallback(w -> w.write("id,name,price"));
-        writer.setLineAggregator(new DelimitedLineAggregator<>() {{
-            setDelimiter(",");
-            setFieldExtractor(new BeanWrapperFieldExtractor<>() {{
-                setNames(new String[]{"id", "name", "price"});
-            }});
-        }});
-
-        return writer;
-    }
-
-    @Bean(name = "exportProductStep")
-    public Step exportProductStep() {
-        return new StepBuilder("exportProductStep", jobRepository)
-                .<Product, Product>chunk(10, transactionManager)
-                .reader(dbReader(entityManagerFactory))
-                .writer(csvWriter())
-                .build();
-    }
-
-    @Bean(name = "exportProductJob")
-    public Job exportProductJob() {
-        SimpleJob job = new SimpleJob("exportJob");
-        job.setName("exportJob");
-
-        job.setJobRepository(jobRepository);
-        job.addStep(exportProductStep());
-        return job;
-    }
-
-    // 6. CommandLineRunner to trigger the job when the application starts
+    // ------------------ JOB ------------------
     @Bean
-    public CommandLineRunner runBatchJobs() {
+    public Job monthlyPayslipJob() {
+        SimpleJob job = new SimpleJob("monthlyPayslipJob");
+        job.setJobRepository(jobRepository);
+        job.addStep(generatePayslipsStep());
+        return job;
+    }
+
+    // ------------------ SCHEDULER : 1er du mois à minuit ------------------
+    @Scheduled(cron = "0 0 0 1 * ?")
+    public void runMonthlyBatch() {
+        try {
+            System.out.println("▶ Lancement batch de génération des fiches de paie...");
+            jobLauncher.run(monthlyPayslipJob(),
+                    new JobParametersBuilder()
+                            .addLong("startAt", System.currentTimeMillis())
+                            .toJobParameters());
+        } catch (Exception e) {
+            System.err.println("Erreur batch : " + e.getMessage());
+        }
+    }
+
+    @Bean
+    public CommandLineRunner testBatchAtStartup() {
         return args -> {
+            System.out.println("▶ Test batch démarré...");
             try {
-                System.out.println("▶️ Démarrage du job d'import...");
-                jobLauncher.run(importProductJob(), new JobParametersBuilder()
-                        .addLong("time-import", System.currentTimeMillis())
-                        .toJobParameters());
-
-                System.out.println("✅ Import terminé.");
-
-                System.out.println("▶️ Démarrage du job d'export...");
-                jobLauncher.run(exportProductJob(), new JobParametersBuilder()
-                        .addLong("time-export", System.currentTimeMillis())
-                        .toJobParameters());
-
-                System.out.println("✅ Export terminé.");
-
+                jobLauncher.run(monthlyPayslipJob(),
+                        new JobParametersBuilder()
+                                .addLong("testRunAt", System.currentTimeMillis())
+                                .toJobParameters());
             } catch (Exception e) {
-                System.err.println("❌ Erreur pendant l'exécution du batch : " + e.getMessage());
+                e.printStackTrace();
+                System.err.println("Erreur lors du test batch : " + e.getMessage());
             }
         };
     }
-}
 
+    // ------------------ PDF GENERATION ------------------
+    private String generatePdf(Payslip payslip) throws Exception {
+        String directory = "C:/payslips/";
+        File dir = new File(directory);
+        if (!dir.exists()) dir.mkdirs();
+
+        String filename = "payslip_" + payslip.getId() + ".pdf";
+        String fullPath = directory + filename;
+
+        PDDocument document = new PDDocument();
+        PDPage page = new PDPage();
+        document.addPage(page);
+
+        PDPageContentStream content = new PDPageContentStream(document, page);
+
+        float margin = 50;
+        float yStart = 750;
+        float lineHeight = 18f;
+
+        content.beginText();
+        content.setFont(PDType1Font.HELVETICA_BOLD, 22);
+        content.newLineAtOffset(margin, yStart);
+        content.showText("FICHE DE PAIE");
+        content.endText();
+
+        content.setLineWidth(1f);
+        content.moveTo(margin, yStart - 8);
+        content.lineTo(550, yStart - 8);
+        content.stroke();
+
+        float y = yStart - 40;
+        content.beginText();
+        content.setFont(PDType1Font.HELVETICA_BOLD, 12);
+        content.newLineAtOffset(margin, y);
+        content.showText("Employé : ");
+        content.setFont(PDType1Font.HELVETICA, 12);
+        content.newLineAtOffset(70, 0);
+        content.showText(payslip.getEmployee().getFirstName() + " " + payslip.getEmployee().getLastName());
+        content.endText();
+
+        y -= 30;
+        content.beginText();
+        content.setFont(PDType1Font.HELVETICA_BOLD, 12);
+        content.newLineAtOffset(margin, y);
+        content.showText("Mois : ");
+        content.setFont(PDType1Font.HELVETICA, 12);
+        content.newLineAtOffset(50, 0);
+        content.showText(payslip.getMonth());
+        content.endText();
+
+        y -= 20;
+        content.beginText();
+        content.setFont(PDType1Font.HELVETICA, 12);
+        content.newLineAtOffset(margin, y);
+        content.showText(String.format("Salaire brut : %.2f €", payslip.getGrossSalary()));
+        content.newLineAtOffset(0, -lineHeight);
+        content.showText(String.format("Salaire net  : %.2f €", payslip.getNetSalary()));
+        content.endText();
+
+        content.beginText();
+        content.setFont(PDType1Font.HELVETICA_OBLIQUE, 9);
+        content.newLineAtOffset(margin, 40);
+        content.showText("Document généré automatiquement.");
+        content.endText();
+
+        content.close();
+        document.save(fullPath);
+        document.close();
+
+        return fullPath;
+    }
+}

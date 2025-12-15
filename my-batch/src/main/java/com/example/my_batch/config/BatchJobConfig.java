@@ -24,7 +24,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Configuration
-@EnableBatchProcessing
 public class BatchJobConfig {
 
     @Autowired
@@ -36,8 +35,10 @@ public class BatchJobConfig {
     @Autowired
     private JavaMailSender javaMailSender;
 
-    // Reader: on construit une ListItemReader depuis l'API (fresh at each job run)
+    // Reader: on construit une ListItemReader depuis l'API (fresh at each job run
+    // due to StepScope)
     @Bean
+    @org.springframework.batch.core.configuration.annotation.StepScope
     public ListItemReader<Employee> employeeItemReader() {
         List<Employee> employees = payrollApiService.fetchAllEmployees();
         return new ListItemReader<>(employees);
@@ -87,9 +88,9 @@ public class BatchJobConfig {
                 try {
                     payrollApiService.sendEmailWithAttachment(javaMailSender, r.getEmployee().getEmail(),
                             "Votre fiche de paie - " + r.getMonth(),
-                            "Bonjour " + r.getEmployee().getFirstName()
+                            "Bonjour " + r.getEmployee().getFirstName() + " " + r.getEmployee().getLastName()
                                     + ",\n\nVeuillez trouver en pièce jointe votre fiche de paie du mois "
-                                    + r.getMonth() + ".\n\nCordialement,\nRH",
+                                    + r.getMonth() + ".\n\nCordialement,\nLe service RH",
                             r.getFilename(), r.getPdfBytes());
                     System.out.println("Mail envoyé à " + r.getEmployee().getEmail());
                 } catch (Exception ex) {

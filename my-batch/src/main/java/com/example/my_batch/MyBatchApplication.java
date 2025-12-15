@@ -10,4 +10,9 @@ public class MyBatchApplication {
 		SpringApplication.run(MyBatchApplication.class, args);
 	}
 
+	@org.springframework.context.annotation.Bean
+	public org.springframework.web.client.RestTemplate restTemplate() {
+		return new org.springframework.web.client.RestTemplate();
+	}
+
 }

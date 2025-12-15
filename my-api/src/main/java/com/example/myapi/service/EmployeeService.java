@@ -38,17 +38,24 @@ public class EmployeeService {
     // Mise à jour des infos
     public Employee updateEmployee(Long id, Employee updated) {
         Employee existing = employeeRepository.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Employee not found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id " + id));
 
-        if (updated.getFirstName() != null) existing.setFirstName(updated.getFirstName());
-        if (updated.getLastName() != null) existing.setLastName(updated.getLastName());
-        if (updated.getEmail() != null) existing.setEmail(updated.getEmail());
-        if (updated.getJob() != null) existing.setJob(updated.getJob());
-        if (updated.getMdp() != null) existing.setMdp(updated.getMdp());
-        if (updated.getHours() != 0) existing.setHours(updated.getHours());
-        if (updated.getSalary() != 0) existing.setSalary(updated.getSalary());
-        if (updated.getAbilities() != null) existing.setAbilities(updated.getAbilities());
+        if (updated.getFirstName() != null)
+            existing.setFirstName(updated.getFirstName());
+        if (updated.getLastName() != null)
+            existing.setLastName(updated.getLastName());
+        if (updated.getEmail() != null)
+            existing.setEmail(updated.getEmail());
+        if (updated.getJob() != null)
+            existing.setJob(updated.getJob());
+        if (updated.getMdp() != null)
+            existing.setMdp(updated.getMdp());
+        if (updated.getHours() != 0)
+            existing.setHours(updated.getHours());
+        if (updated.getHourlyRate() != null)
+            existing.setHourlyRate(updated.getHourlyRate());
+        if (updated.getAbilities() != null)
+            existing.setAbilities(updated.getAbilities());
 
         return employeeRepository.save(existing);
     }

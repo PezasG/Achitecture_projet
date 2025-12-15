@@ -57,7 +57,8 @@ public class PayslipService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with id " + employeeId));
 
         // Calcul salaire
-        double grossSalary = employee.getSalary();
+        double rate = employee.getHourlyRate() != null ? employee.getHourlyRate() : 0.0;
+        double grossSalary = employee.getHours() * rate;
         double netSalary = grossSalary * 0.8; // 20% charges
 
         // Création fiche
@@ -82,7 +83,8 @@ public class PayslipService {
         try {
             String directory = "C:/payslips/";
             File dir = new File(directory);
-            if (!dir.exists()) dir.mkdirs();
+            if (!dir.exists())
+                dir.mkdirs();
 
             String filename = "payslip_" + payslip.getId() + ".pdf";
             String fullPath = directory + filename;

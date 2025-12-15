@@ -15,13 +15,16 @@ public class Employee {
     private String job;
     private String mdp;
     private int hours;
-    private int salary;
+
     private String abilities;
 
     // Constructeurs
-    public Employee() {}
+    public Employee() {
+    }
 
-    public Employee(String FirstName, String LastName, String email,  String job, String mdp, int hours, int salary, String abilities) {
+    public Employee(String FirstName, String LastName, String email, String job, String mdp, int hours,
+            Double hourlyRate,
+            String abilities) {
 
         this.FirstName = FirstName;
         this.LastName = LastName;
@@ -29,7 +32,7 @@ public class Employee {
         this.job = job;
         this.mdp = mdp;
         this.hours = hours;
-        this.salary = salary;
+        this.hourlyRate = hourlyRate;
         this.abilities = abilities;
     }
 
@@ -66,23 +69,45 @@ public class Employee {
         this.email = email;
     }
 
-    public String getJob() { return job; }
+    public String getJob() {
+        return job;
+    }
 
-    public void setJob(String job) { this.job = job; }
+    public void setJob(String job) {
+        this.job = job;
+    }
 
-    public String getMdp() { return mdp; }
+    public String getMdp() {
+        return mdp;
+    }
 
-    public void setMdp(String mdp) { this.mdp = mdp; }
+    public void setMdp(String mdp) {
+        this.mdp = mdp;
+    }
 
-    public int getHours() { return hours; }
+    public int getHours() {
+        return hours;
+    }
 
-    public void setHours(int hours) { this.hours = hours; }
+    public void setHours(int hours) {
+        this.hours = hours;
+    }
 
-    public int getSalary() { return salary; }
+    private Double hourlyRate;
 
-    public void setSalary(int salary) { this.salary = salary; }
+    public Double getHourlyRate() {
+        return hourlyRate;
+    }
 
-    public String getAbilities() { return abilities; }
+    public void setHourlyRate(Double hourlyRate) {
+        this.hourlyRate = hourlyRate;
+    }
 
-    public void setAbilities(String abilities) { this.abilities = abilities; }
+    public String getAbilities() {
+        return abilities;
+    }
+
+    public void setAbilities(String abilities) {
+        this.abilities = abilities;
+    }
 }

@@ -1,18 +1,53 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <title>Gestion des employés</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
 
     <style>
-        body { background: linear-gradient(135deg,#6a11cb,#2575fc); min-height: 100vh; color: white; padding-top: 30px; }
-        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-        .card { border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
-        .btn-wide { padding: 10px 20px; border-radius: 20px; }
-        .btn-sm-wide { padding: 6px 14px; border-radius: 10px; }
-        input.form-control-inline, select.form-control-inline { width: 100%; padding: 2px 6px; font-size: 0.9rem; }
-        .action-buttons { display: flex; gap: 6px; align-items: center; }
+        body {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            min-height: 100vh;
+            color: white;
+            padding-top: 30px;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            border-radius: 14px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-wide {
+            padding: 10px 20px;
+            border-radius: 20px;
+        }
+
+        .btn-sm-wide {
+            padding: 6px 14px;
+            border-radius: 10px;
+        }
+
+        input.form-control-inline,
+        select.form-control-inline {
+            width: 100%;
+            padding: 2px 6px;
+            font-size: 0.9rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
 
         .pdf-panel {
             background: #f8f9fa;
@@ -22,6 +57,7 @@
             margin-top: 8px;
             display: none;
         }
+
         .pdf-row {
             background: #ffffff;
             border: 1px solid #ddd;
@@ -32,75 +68,91 @@
             justify-content: space-between;
             align-items: center;
         }
+
+        /* AJOUT: Ajustement largeur colonnes */
+        th,
+        td {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
     </style>
 </head>
 
 <body>
-<div class="container">
+    <div class="container-fluid">
 
-    <!-- BARRE HAUT -->
-    <div class="top-bar">
-        <h2>Espace RH — Employés</h2>
-        <div>
-            <button id="addEmployeeBtn" class="btn btn-light btn-wide text-dark mr-2">+ Nouvel employé</button>
-            <a href="/" class="btn btn-danger btn-wide">Déconnexion</a>
+        <!-- BARRE HAUT -->
+        <div class="top-bar">
+            <h2>Espace RH — Employés</h2>
+            <div>
+                <button id="addEmployeeBtn" class="btn btn-light btn-wide text-dark mr-2">+ Nouvel employé</button>
+                <a href="/" class="btn btn-danger btn-wide">Déconnexion</a>
+            </div>
+        </div>
+
+        <!-- TABLEAU -->
+        <div class="card bg-light text-dark p-3">
+            <table class="table table-striped">
+                <thead class="thead-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Nom</th>
+                        <th>Prénom</th>
+                        <th>Email</th>
+                        <th>Poste</th>
+                        <th>Heures</th>
+                        <th>Taux Horaire</th>
+                        <th>MDP</th>
+                        <th>Abilités</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="employeeTableBody">
+                    <tr>
+                        <td colspan="10" class="text-center text-dark">Chargement...</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- TABLEAU -->
-    <div class="card bg-light text-dark p-3">
-        <table class="table table-striped">
-            <thead class="thead-light">
-            <tr>
-                <th>#</th><th>Nom</th><th>Prénom</th><th>Email</th>
-                <th>Poste</th><th>Heures</th><th>Salaire</th>
-                <th>MDP</th><th>Abilités</th><th>Actions</th>
-            </tr>
-            </thead>
+    <script>
+        /* ======================= CHARGEMENT ====================== */
+        loadEmployees();
 
-            <tbody id="employeeTableBody">
-            <tr><td colspan="10" class="text-center text-dark">Chargement...</td></tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<script>
-    /* ======================= CHARGEMENT ====================== */
-    loadEmployees();
-
-    function loadEmployees() {
-        fetch("http://localhost:8080/api/employees/all")
-            .then(res => res.json())
-            .then(data => renderEmployees(data))
-            .catch(() => {
-                document.getElementById("employeeTableBody").innerHTML =
-                    "<tr><td colspan='10' class='text-center text-dark'>Erreur chargement API</td></tr>";
-            });
-    }
-
-    /* ======================= AFFICHAGE ======================== */
-    function renderEmployees(list) {
-        const tbody = document.getElementById("employeeTableBody");
-        tbody.innerHTML = "";
-
-        if (list.length === 0) {
-            tbody.innerHTML = "<tr><td colspan='10' class='text-center'>Aucun employé</td></tr>";
-            return;
+        function loadEmployees() {
+            fetch("http://localhost:8080/api/employees/all")
+                .then(res => res.json())
+                .then(data => renderEmployees(data))
+                .catch(() => {
+                    document.getElementById("employeeTableBody").innerHTML =
+                        "<tr><td colspan='10' class='text-center text-dark'>Erreur chargement API</td></tr>";
+                });
         }
 
-        list.forEach(emp => {
-            const tr = document.createElement("tr");
-            tr.dataset.id = emp.id;
+        /* ======================= AFFICHAGE ======================== */
+        function renderEmployees(list) {
+            const tbody = document.getElementById("employeeTableBody");
+            tbody.innerHTML = "";
 
-            tr.innerHTML = `
+            if (list.length === 0) {
+                tbody.innerHTML = "<tr><td colspan='10' class='text-center'>Aucun employé</td></tr>";
+                return;
+            }
+
+            list.forEach(emp => {
+                const tr = document.createElement("tr");
+                tr.dataset.id = emp.id;
+
+                tr.innerHTML = `
                 <td>${emp.id}</td>
                 <td class="emp-lastName">${emp.lastName}</td>
                 <td class="emp-firstName">${emp.firstName}</td>
                 <td class="emp-email">${emp.email}</td>
                 <td class="emp-job">${emp.job}</td>
                 <td class="emp-hours">${emp.hours}</td>
-                <td class="emp-salary">${emp.salary}</td>
+                <td class="emp-hourlyRate">${emp.hourlyRate}</td>
                 <td class="emp-mdp">••••••<span class="real-mdp" style="display:none;">${emp.mdp}</span></td>
                 <td class="emp-abilities">${emp.abilities}</td>
                 <td class="action-buttons">
@@ -109,21 +161,21 @@
                     <button class="btn btn-danger btn-sm-wide" onclick="deleteEmployee(this)">Supprimer</button>
                 </td>
             `;
-            tbody.appendChild(tr);
-        });
-    }
+                tbody.appendChild(tr);
+            });
+        }
 
-    /* ==================== FICHES DE PAIES ===================== */
-    function togglePayslips(empId) {
-        const existing = document.getElementById("pdf-panel-" + empId);
-        if (existing) { existing.style.display = existing.style.display==="none"?"block":"none"; return; }
+        /* ==================== FICHES DE PAIES ===================== */
+        function togglePayslips(empId) {
+            const existing = document.getElementById("pdf-panel-" + empId);
+            if (existing) { existing.style.display = existing.style.display === "none" ? "block" : "none"; return; }
 
-        fetch(`http://localhost:8080/api/payslips/employee/${empId}`)
-            .then(res => res.json())
-            .then(list => {
-                const row = document.querySelector(`tr[data-id="${empId}"]`);
-                const container = document.createElement("tr");
-                container.innerHTML = `
+            fetch(`http://localhost:8080/api/payslips/employee/${empId}`)
+                .then(res => res.json())
+                .then(list => {
+                    const row = document.querySelector(`tr[data-id="${empId}"]`);
+                    const container = document.createElement("tr");
+                    container.innerHTML = `
                     <td colspan="10">
                         <div class="pdf-panel" id="pdf-panel-${empId}">
                             <h5>Fiches de paie :</h5>
@@ -132,15 +184,15 @@
                         </div>
                     </td>
                 `;
-                row.after(container);
+                    row.after(container);
 
-                const listDiv = document.getElementById(`pdf-list-${empId}`);
-                listDiv.innerHTML = "";
+                    const listDiv = document.getElementById(`pdf-list-${empId}`);
+                    listDiv.innerHTML = "";
 
-                if (list.length === 0) listDiv.innerHTML = "<p>Aucune fiche de paie trouvée.</p>";
-                else {
-                    list.forEach(p => {
-                        listDiv.innerHTML += `
+                    if (list.length === 0) listDiv.innerHTML = "<p>Aucune fiche de paie trouvée.</p>";
+                    else {
+                        list.forEach(p => {
+                            listDiv.innerHTML += `
                             <div class="pdf-row">
                                 <strong>${p.month}</strong>
                                 <div>
@@ -148,97 +200,97 @@
                                     <button class="btn btn-danger btn-sm-wide" onclick="deletePayslip(${p.id}, ${empId})">Supprimer</button>
                                 </div>
                             </div>`;
-                    });
-                }
-                document.getElementById(`pdf-panel-${empId}`).style.display = "block";
-            });
-    }
+                        });
+                    }
+                    document.getElementById(`pdf-panel-${empId}`).style.display = "block";
+                });
+        }
 
-    function generatePayslip(empId) {
-        const month = prompt("Mois (format YYYY-MM) :");
-        if (!month) return;
+        function generatePayslip(empId) {
+            const month = prompt("Mois (format YYYY-MM) :");
+            if (!month) return;
 
-        fetch(`http://localhost:8080/api/payslips/create`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ employeeId: empId, month: month })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Erreur création fiche");
-            return res.json();
-        })
-        .then(() => {
-            document.getElementById(`pdf-panel-${empId}`)?.remove();
-            togglePayslips(empId);
-        })
-        .catch(() => alert("Erreur génération fiche"));
-    }
-
-    function deletePayslip(pId, empId) {
-        if (!confirm("Supprimer cette fiche ?")) return;
-
-        fetch(`http://localhost:8080/api/payslips/delete/${pId}`, { method:"DELETE" })
-            .then(() => {
-                document.getElementById(`pdf-panel-${empId}`)?.remove();
-                togglePayslips(empId);
+            fetch(`http://localhost:8080/api/payslips/create`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ employeeId: empId, month: month })
             })
-            .catch(() => alert("Erreur suppression fiche"));
-    }
+                .then(res => {
+                    if (!res.ok) throw new Error("Erreur création fiche");
+                    return res.json();
+                })
+                .then(() => {
+                    document.getElementById(`pdf-panel-${empId}`)?.remove();
+                    togglePayslips(empId);
+                })
+                .catch(() => alert("Erreur génération fiche"));
+        }
 
-    /* ======================= MODIFIER ========================= */
-    function enableEdit(button) {
-        const row = button.closest("tr");
-        const mdpReal = row.querySelector(".real-mdp").textContent.trim();
-        const fields = ["lastName","firstName","email","job","hours","salary","abilities"];
+        function deletePayslip(pId, empId) {
+            if (!confirm("Supprimer cette fiche ?")) return;
 
-        fields.forEach(f => {
-            const cell = row.querySelector(".emp-" + f);
-            const val = cell.textContent.trim();
-            if (f === "abilities") {
-                cell.innerHTML = `<select class="form-control-inline">
-                    <option value="EMPLOYE" ${val==="EMPLOYE"?"selected":""}>EMPLOYE</option>
-                    <option value="RH" ${val==="RH"?"selected":""}>RH</option>
+            fetch(`http://localhost:8080/api/payslips/delete/${pId}`, { method: "DELETE" })
+                .then(() => {
+                    document.getElementById(`pdf-panel-${empId}`)?.remove();
+                    togglePayslips(empId);
+                })
+                .catch(() => alert("Erreur suppression fiche"));
+        }
+
+        /* ======================= MODIFIER ========================= */
+        function enableEdit(button) {
+            const row = button.closest("tr");
+            const mdpReal = row.querySelector(".real-mdp").textContent.trim();
+            const fields = ["lastName", "firstName", "email", "job", "hours", "hourlyRate", "abilities"];
+
+            fields.forEach(f => {
+                const cell = row.querySelector(".emp-" + f);
+                const val = cell.textContent.trim();
+                if (f === "abilities") {
+                    cell.innerHTML = `<select class="form-control-inline">
+                    <option value="EMPLOYE" ${val === "EMPLOYE" ? "selected" : ""}>EMPLOYE</option>
+                    <option value="RH" ${val === "RH" ? "selected" : ""}>RH</option>
                 </select>`;
-            } else cell.innerHTML = `<input class="form-control-inline" value="${val}">`;
-        });
+                } else cell.innerHTML = `<input class="form-control-inline" value="${val}">`;
+            });
 
-        row.querySelector(".emp-mdp").innerHTML = `<input class="form-control-inline" value="${mdpReal}">`;
+            row.querySelector(".emp-mdp").innerHTML = `<input class="form-control-inline" value="${mdpReal}">`;
 
-        button.textContent = "Valider";
-        button.classList.replace("btn-warning","btn-success");
-        button.onclick = () => validateEdit(row.dataset.id, row);
-    }
+            button.textContent = "Valider";
+            button.classList.replace("btn-warning", "btn-success");
+            button.onclick = () => validateEdit(row.dataset.id, row);
+        }
 
-    function validateEdit(id, row) {
-        const inputs = row.querySelectorAll("input, select");
-        const data = {
-            lastName: inputs[0].value,
-            firstName: inputs[1].value,
-            email: inputs[2].value,
-            job: inputs[3].value,
-            hours: inputs[4].value,
-            salary: inputs[5].value,
-            mdp: inputs[6].value,
-            abilities: inputs[7].value
-        };
-        fetch(`http://localhost:8080/api/employees/update/${id}`, {
-            method:"PUT", headers: {"Content-Type":"application/json"}, body: JSON.stringify(data)
-        }).then(() => loadEmployees()).catch(() => alert("Erreur mise à jour"));
-    }
+        function validateEdit(id, row) {
+            const inputs = row.querySelectorAll("input, select");
+            const data = {
+                lastName: inputs[0].value,
+                firstName: inputs[1].value,
+                email: inputs[2].value,
+                job: inputs[3].value,
+                hours: inputs[4].value,
+                hourlyRate: inputs[5].value,
+                mdp: inputs[6].value,
+                abilities: inputs[7].value
+            };
+            fetch(`http://localhost:8080/api/employees/update/${id}`, {
+                method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data)
+            }).then(() => loadEmployees()).catch(() => alert("Erreur mise à jour"));
+        }
 
-    /* ======================= SUPPRIMER EMPLOYE ======================== */
-    function deleteEmployee(button) {
-        const id = button.closest("tr").dataset.id;
-        if (!confirm("Supprimer cet employé ?")) return;
-        fetch(`http://localhost:8080/api/employees/delete/${id}`, { method:"DELETE" }).then(() => loadEmployees());
-    }
+        /* ======================= SUPPRIMER EMPLOYE ======================== */
+        function deleteEmployee(button) {
+            const id = button.closest("tr").dataset.id;
+            if (!confirm("Supprimer cet employé ?")) return;
+            fetch(`http://localhost:8080/api/employees/delete/${id}`, { method: "DELETE" }).then(() => loadEmployees());
+        }
 
-    /* ===================== AJOUTER EMPLOYE =========================== */
-    document.getElementById("addEmployeeBtn").onclick = () => {
-        if (document.getElementById("new-employee-row")) return;
-        const tbody = document.getElementById("employeeTableBody");
-        const row = document.createElement("tr"); row.id="new-employee-row";
-        row.innerHTML = `
+        /* ===================== AJOUTER EMPLOYE =========================== */
+        document.getElementById("addEmployeeBtn").onclick = () => {
+            if (document.getElementById("new-employee-row")) return;
+            const tbody = document.getElementById("employeeTableBody");
+            const row = document.createElement("tr"); row.id = "new-employee-row";
+            row.innerHTML = `
             <td>—</td>
             <td><input class="form-control-inline"></td>
             <td><input class="form-control-inline"></td>
@@ -257,27 +309,28 @@
                 <button class="btn btn-success btn-sm-wide" onclick="submitNewEmployee(this)">Ajouter</button>
                 <button class="btn btn-secondary btn-sm-wide" onclick="cancelNewEmployee()">Annuler</button>
             </td>`;
-        tbody.prepend(row);
-    };
-
-    function cancelNewEmployee() { document.getElementById("new-employee-row")?.remove(); }
-
-    function submitNewEmployee(button) {
-        const inputs = button.closest("tr").querySelectorAll("input, select");
-        const data = {
-            lastName: inputs[0].value,
-            firstName: inputs[1].value,
-            email: inputs[2].value,
-            job: inputs[3].value,
-            hours: inputs[4].value,
-            salary: inputs[5].value,
-            mdp: inputs[6].value,
-            abilities: inputs[7].value
+            tbody.prepend(row);
         };
-        fetch("http://localhost:8080/api/employees/save", {
-            method:"POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(data)
-        }).then(() => loadEmployees()).catch(() => alert("Erreur création"));
-    }
-</script>
+
+        function cancelNewEmployee() { document.getElementById("new-employee-row")?.remove(); }
+
+        function submitNewEmployee(button) {
+            const inputs = button.closest("tr").querySelectorAll("input, select");
+            const data = {
+                lastName: inputs[0].value,
+                firstName: inputs[1].value,
+                email: inputs[2].value,
+                job: inputs[3].value,
+                hours: inputs[4].value,
+                hourlyRate: inputs[5].value,
+                mdp: inputs[6].value,
+                abilities: inputs[7].value
+            };
+            fetch("http://localhost:8080/api/employees/save", {
+                method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data)
+            }).then(() => loadEmployees()).catch(() => alert("Erreur création"));
+        }
+    </script>
 </body>
+
 </html>

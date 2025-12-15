@@ -15,14 +15,15 @@ public class Employee {
     private String job;
     private String mdp;
     private int hours;
-    private int salary;
+    private Double hourlyRate;
     private String abilities;
 
     // Constructeurs
-    public Employee() {}
+    public Employee() {
+    }
 
     public Employee(String FirstName, String LastName, String email, String job,
-                    String mdp, int hours, int salary, String abilities) {
+            String mdp, int hours, Double hourlyRate, String abilities) {
 
         this.FirstName = FirstName;
         this.LastName = LastName;
@@ -30,7 +31,7 @@ public class Employee {
         this.job = job;
         this.mdp = mdp;
         this.hours = hours;
-        this.salary = salary;
+        this.hourlyRate = hourlyRate;
         this.abilities = abilities;
     }
 
@@ -91,12 +92,12 @@ public class Employee {
         this.hours = hours;
     }
 
-    public int getSalary() {
-        return salary;
+    public Double getHourlyRate() {
+        return hourlyRate;
     }
 
-    public void setSalary(int salary) {
-        this.salary = salary;
+    public void setHourlyRate(Double hourlyRate) {
+        this.hourlyRate = hourlyRate;
     }
 
     public String getAbilities() {

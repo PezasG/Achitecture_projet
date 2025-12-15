@@ -23,7 +23,7 @@ public class DataInitializer {
                 rh.setJob("Responsable RH");
                 rh.setMdp("rhAdmin");
                 rh.setHours(0);
-                rh.setSalary(0);
+                rh.setHourlyRate(0.0);
                 rh.setAbilities("RH");
 
                 employeeRepo.save(rh);

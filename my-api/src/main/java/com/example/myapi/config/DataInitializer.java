@@ -38,7 +38,7 @@ public class DataInitializer {
                 emp.setFirstName("Gaëtan");
                 emp.setLastName("Pezas");
                 emp.setEmail("gaetan.pezas@gmail.com");
-                emp.setJob("Chef et dev du projet ;)");
+                emp.setJob("Chef et dev du projet ;)"); // #Oups #Indice #MessageSubliminale
                 emp.setMdp("1234");
                 emp.setHours(150);
                 emp.setHourlyRate(40.0);

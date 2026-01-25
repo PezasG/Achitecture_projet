@@ -16,7 +16,7 @@ services:
     networks:
       - app-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -50,6 +50,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password
+      MY_API_URL: http://my-api:8080
     ports:
       - "8081:8081"
     depends_on:
@@ -69,6 +70,7 @@ services:
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: password
       PDF_DIRECTORY: /app/payslips/
+      MY_API_URL: http://my-api:8080
     ports:
       - "8082:8082"
     volumes:

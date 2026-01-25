@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "employee-api", url = "http://localhost:8080/api/employees")
+@FeignClient(name = "employee-api", url = "${my-api.url:http://localhost:8080}/api/employees")
 public interface EmployeeClient {
 
     @GetMapping("/all")

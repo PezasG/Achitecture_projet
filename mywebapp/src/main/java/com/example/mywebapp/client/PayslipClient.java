@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@FeignClient(name = "payslip-api", url = "http://localhost:8080/api/payslips")
+@FeignClient(name = "payslip-api", url = "${my-api.url:http://localhost:8080}/api/payslips")
 public interface PayslipClient {
 
     @GetMapping("/employee/{id}")

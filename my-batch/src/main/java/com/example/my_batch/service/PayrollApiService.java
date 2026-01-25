@@ -18,7 +18,12 @@ import java.util.Map;
 public class PayrollApiService {
 
     private final RestTemplate restTemplate;
-    private final String apiBase = "http://localhost:8080/api";
+    @org.springframework.beans.factory.annotation.Value("${my-api.url:http://localhost:8080}")
+    private String apiBaseUrl;
+
+    private String getApiBase() {
+        return apiBaseUrl + "/api";
+    }
 
     public PayrollApiService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
@@ -27,7 +32,8 @@ public class PayrollApiService {
     // Récupère tous les employés via l'API
     public List<Employee> fetchAllEmployees() {
         try {
-            ResponseEntity<Employee[]> resp = restTemplate.getForEntity(apiBase + "/employees/all", Employee[].class);
+            ResponseEntity<Employee[]> resp = restTemplate.getForEntity(getApiBase() + "/employees/all",
+                    Employee[].class);
             return resp.getBody() == null ? List.of() : Arrays.asList(resp.getBody());
         } catch (Exception e) {
             System.err.println("Erreur lors de la récupération des employés: " + e.getMessage());
@@ -49,7 +55,7 @@ public class PayrollApiService {
         HttpEntity<Map<String, String>> requestEntity = new HttpEntity<>(requestBody, headers);
 
         try {
-            ResponseEntity<Map> resp = restTemplate.postForEntity(apiBase + "/payslips/create", requestEntity,
+            ResponseEntity<Map> resp = restTemplate.postForEntity(getApiBase() + "/payslips/create", requestEntity,
                     Map.class);
             Map<String, Object> m = resp.getBody();
 
@@ -67,7 +73,7 @@ public class PayrollApiService {
     // Télécharger les bytes via endpoint download (stream)
     public byte[] downloadPayslipPdfBytes(Long payslipId) {
         try {
-            ResponseEntity<byte[]> resp = restTemplate.exchange(apiBase + "/payslips/download/" + payslipId,
+            ResponseEntity<byte[]> resp = restTemplate.exchange(getApiBase() + "/payslips/download/" + payslipId,
                     HttpMethod.GET, null, byte[].class);
             return resp.getBody();
         } catch (Exception e) {

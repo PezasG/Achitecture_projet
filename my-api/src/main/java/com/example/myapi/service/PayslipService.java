@@ -95,67 +95,134 @@ public class PayslipService {
 
             PDPageContentStream content = new PDPageContentStream(document, page);
 
-            // ===== TITRE =====
+            // Fonts
+            PDType1Font fontBold = PDType1Font.HELVETICA_BOLD;
+            PDType1Font fontRegular = PDType1Font.HELVETICA;
+            PDType1Font fontOblique = PDType1Font.HELVETICA_OBLIQUE;
+
+            // Coordinates
+            float yPosition = 750;
+            float margin = 50;
+
+            // ===== HEADER COMPANY =====
             content.beginText();
-            content.setFont(PDType1Font.HELVETICA_BOLD, 26);
-            content.newLineAtOffset(50, 750);
-            content.showText("FICHE DE PAIE");
+            content.setFont(fontBold, 18);
+            content.newLineAtOffset(margin, yPosition);
+            content.showText("Pezas & Znedi");
             content.endText();
 
-            // Ligne sous le titre
+            yPosition -= 40;
+
+            // ===== TITRE =====
+            content.beginText();
+            content.setFont(fontBold, 22);
+            content.newLineAtOffset(margin, yPosition);
+            content.showText("FICHE DE PAIE - " + payslip.getMonth());
+            content.endText();
+
+            // Line under title
+            yPosition -= 10;
             content.setLineWidth(1f);
-            content.moveTo(50, 740);
-            content.lineTo(550, 740);
+            content.moveTo(margin, yPosition);
+            content.lineTo(550, yPosition);
             content.stroke();
 
             // ===== INFORMATIONS EMPLOYE =====
-            float startY = 700;
-            float lineHeight = 20f;
-            float startX = 50;
+            yPosition -= 50;
 
             content.beginText();
-            content.setFont(PDType1Font.HELVETICA_BOLD, 14);
-            content.newLineAtOffset(startX, startY);
+            content.setFont(fontBold, 14);
+            content.newLineAtOffset(margin, yPosition);
             content.showText("Informations employé :");
             content.endText();
 
-            startY -= lineHeight;
-
+            yPosition -= 25;
             content.beginText();
-            content.setFont(PDType1Font.HELVETICA, 12);
-            content.newLineAtOffset(startX, startY);
-            content.setLeading(lineHeight);
+            content.setFont(fontRegular, 12);
+            content.newLineAtOffset(margin, yPosition);
+            content.setLeading(20f);
             content.showText("Nom : " + payslip.getEmployee().getLastName());
             content.newLine();
             content.showText("Prénom : " + payslip.getEmployee().getFirstName());
             content.newLine();
-            content.showText("Mois : " + payslip.getMonth());
+            content.showText("Email : " + payslip.getEmployee().getEmail());
             content.endText();
 
             // ===== SALAIRE =====
-            startY -= lineHeight * 4;
+            yPosition -= 100;
+
             content.beginText();
-            content.setFont(PDType1Font.HELVETICA_BOLD, 14);
-            content.newLineAtOffset(startX, startY);
-            content.showText("Rémunération :");
+            content.setFont(fontBold, 14);
+            content.newLineAtOffset(margin, yPosition);
+            content.showText("Détail de la rémunération :");
             content.endText();
 
-            startY -= lineHeight;
+            yPosition -= 30;
+
+            // Salaire Brut
+            content.beginText();
+            content.setFont(fontRegular, 12);
+            content.newLineAtOffset(margin, yPosition);
+            content.showText("Salaire Brut :");
+            content.endText();
+
+            String gross = String.format("%.2f €", payslip.getGrossSalary());
+            float grossWidth = fontRegular.getStringWidth(gross) / 1000 * 12;
+            content.beginText();
+            content.setFont(fontRegular, 12);
+            content.newLineAtOffset(550 - grossWidth, yPosition);
+            content.showText(gross);
+            content.endText();
+
+            yPosition -= 20;
+
+            // Charges
+            content.beginText();
+            content.setFont(fontRegular, 12);
+            content.newLineAtOffset(margin, yPosition);
+            content.showText("Charges sociales (20%) :");
+            content.endText();
+
+            double charges = payslip.getGrossSalary() - payslip.getNetSalary();
+            String chargesStr = String.format("- %.2f €", charges);
+            float chargesWidth = fontRegular.getStringWidth(chargesStr) / 1000 * 12;
 
             content.beginText();
-            content.setFont(PDType1Font.HELVETICA, 12);
-            content.newLineAtOffset(startX, startY);
-            content.setLeading(lineHeight);
-            content.showText("Salaire brut : " + payslip.getGrossSalary() + " €");
-            content.newLine();
-            content.showText("Salaire net : " + payslip.getNetSalary() + " €");
+            content.setFont(fontRegular, 12);
+            content.newLineAtOffset(550 - chargesWidth, yPosition);
+            content.showText(chargesStr);
+            content.endText();
+
+            // Separator line
+            yPosition -= 10;
+            content.setLineWidth(0.5f);
+            content.moveTo(margin, yPosition);
+            content.lineTo(550, yPosition);
+            content.stroke();
+
+            yPosition -= 30;
+
+            // NET A PAYER
+            content.beginText();
+            content.setFont(fontBold, 16);
+            content.newLineAtOffset(margin, yPosition);
+            content.showText("NET À PAYER");
+            content.endText();
+
+            String net = String.format("%.2f €", payslip.getNetSalary());
+            float netWidth = fontBold.getStringWidth(net) / 1000 * 16;
+
+            content.beginText();
+            content.setFont(fontBold, 16);
+            content.newLineAtOffset(550 - netWidth, yPosition);
+            content.showText(net);
             content.endText();
 
             // ===== FOOTER =====
             content.beginText();
-            content.setFont(PDType1Font.HELVETICA_OBLIQUE, 10);
-            content.newLineAtOffset(50, 50);
-            content.showText("Document généré automatiquement par le système RH.");
+            content.setFont(fontOblique, 10);
+            content.newLineAtOffset(margin, 50);
+            content.showText("Document généré automatiquement par Pezas & Znedi RH System.");
             content.endText();
 
             content.close();

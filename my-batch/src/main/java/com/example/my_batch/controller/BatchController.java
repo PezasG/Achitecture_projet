@@ -6,10 +6,8 @@ import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.time.LocalDate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
 
 @RestController
 @RequestMapping("/batch")
@@ -27,7 +25,8 @@ public class BatchController {
         try {
             JobParametersBuilder builder = new JobParametersBuilder();
             builder.addLong("time", System.currentTimeMillis());
-            if (month != null) builder.addString("month", month);
+            if (month != null)
+                builder.addString("month", month);
             jobLauncher.run(payrollJob, builder.toJobParameters());
             return ResponseEntity.ok("Job lancé");
         } catch (Exception e) {
@@ -35,6 +34,7 @@ public class BatchController {
             return ResponseEntity.status(500).body("Erreur lancement job : " + e.getMessage());
         }
     }
+
     @Component
     public class BatchScheduler {
 
@@ -48,7 +48,8 @@ public class BatchController {
         @Scheduled(cron = "0 0 2 1 * ?")
         public void runMonthly() {
             try {
-                jobLauncher.run(payrollJob, new JobParametersBuilder().addLong("scheduledAt", System.currentTimeMillis()).toJobParameters());
+                jobLauncher.run(payrollJob, new JobParametersBuilder()
+                        .addLong("scheduledAt", System.currentTimeMillis()).toJobParameters());
                 System.out.println("Batch mensuel lancé");
             } catch (Exception e) {
                 e.printStackTrace();

@@ -6,7 +6,6 @@ import com.example.my_batch.service.PayrollApiService;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.Step;
-import org.springframework.batch.core.configuration.annotation.EnableBatchProcessing;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
@@ -35,8 +34,7 @@ public class BatchJobConfig {
     @Autowired
     private JavaMailSender javaMailSender;
 
-    // Reader: on construit une ListItemReader depuis l'API (fresh at each job run
-    // due to StepScope)
+    // Reader: on construit une ListItemReader depuis l'API
     @Bean
     @org.springframework.batch.core.configuration.annotation.StepScope
     public ListItemReader<Employee> employeeItemReader() {
@@ -52,7 +50,7 @@ public class BatchJobConfig {
             try {
                 String month = LocalDate.now().getYear() + "-" + String.format("%02d", LocalDate.now().getMonthValue());
 
-                // create payslip via API -> returns payslip DTO
+                // Créer payslip via API -> returns payslip DTO
                 PayrollApiService.PayslipDto payslip = payrollApiService.createPayslipForEmployee(employee.getId(),
                         month);
 
@@ -61,7 +59,7 @@ public class BatchJobConfig {
                     return null;
                 }
 
-                // download PDF bytes
+                // Télécharger PDF bytes
                 byte[] pdfBytes = payrollApiService.downloadPayslipPdfBytes(payslip.getId());
                 if (pdfBytes == null) {
                     System.err.println("Échec téléchargement PDF fiche ID: " + payslip.getId());
@@ -119,7 +117,7 @@ public class BatchJobConfig {
                 .build();
     }
 
-    // helper to run from code
+    // Helper to run from code
     public void launchJob(Job job) throws Exception {
         jobLauncher.run(job, new JobParametersBuilder().addLong("time", System.currentTimeMillis()).toJobParameters());
     }

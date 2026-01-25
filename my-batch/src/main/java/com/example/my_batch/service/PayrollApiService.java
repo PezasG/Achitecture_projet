@@ -70,7 +70,7 @@ public class PayrollApiService {
         }
     }
 
-    // Télécharger les bytes via endpoint download (stream)
+    // Télécharger les bytes via endpoint download
     public byte[] downloadPayslipPdfBytes(Long payslipId) {
         try {
             ResponseEntity<byte[]> resp = restTemplate.exchange(getApiBase() + "/payslips/download/" + payslipId,
@@ -100,7 +100,7 @@ public class PayrollApiService {
         mailSender.send(msg);
     }
 
-    // Simple DTO for payslip minimal
+    // Simple DTO pour payslip
     public static class PayslipDto {
         private final Long id;
         private final String urlPdf;

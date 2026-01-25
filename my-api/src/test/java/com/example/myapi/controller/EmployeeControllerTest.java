@@ -39,14 +39,13 @@ class EmployeeControllerTest {
     @Test
     void testGetAllEmployees() throws Exception {
         List<Employee> mockEmployees = Arrays.asList(
-                new Employee("Gaëtan", "Pezas", "gaetan.pezas@test.fr", "Dev", "123", 35, 11, "EMPLOYE"),
-                new Employee("Yacine", "Znedi", "yacine.znedi@test.fr", "Dev", "456", 35, 22, "EMPLOYE")
-        );
+                new Employee("Gaëtan", "Pezas", "gaetan.pezas@test.fr", "Dev", "123", 35, 11.0, "EMPLOYE"),
+                new Employee("Yacine", "Znedi", "yacine.znedi@test.fr", "Dev", "456", 35, 22.0, "EMPLOYE"));
 
         when(employeeService.getAllEmployees()).thenReturn(mockEmployees);
 
         mockMvc.perform(get("/api/employees")
-                        .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 // 💡 Correction : tu testes la taille → ici elle devrait être 2

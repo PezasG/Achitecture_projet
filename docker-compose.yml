@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # API Backend
+  my-api:
+    build:
+      context: ./my-api
+      dockerfile: Dockerfile
+    container_name: my-api
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: on-failure
+
+  # Web Application
+  mywebapp:
+    build:
+      context: ./mywebapp
+      dockerfile: Dockerfile
+    container_name: mywebapp
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+    ports:
+      - "8081:8081"
+    depends_on:
+      - my-api
+    networks:
+      - app-network
+    restart: on-failure
+
+  # Batch Processing
+  my-batch:
+    build:
+      context: ./my-batch
+      dockerfile: Dockerfile
+    container_name: my-batch
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/postgres
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+      PDF_DIRECTORY: /app/payslips/
+    ports:
+      - "8082:8082"
+    volumes:
+      - payslips-data:/app/payslips
+    depends_on:
+      - my-api
+    networks:
+      - app-network
+    restart: on-failure
+
+volumes:
+  postgres-data:
+    driver: local
+  payslips-data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

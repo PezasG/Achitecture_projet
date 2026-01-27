@@ -42,7 +42,7 @@ public class DataInitializer {
                 emp.setMdp("1234");
                 emp.setHours(150);
                 emp.setHourlyRate(40.0);
-                emp.setAbilities("EMPLOYEE");
+                emp.setAbilities("EMPLOYE");
 
                 employeeRepo.save(emp);
 

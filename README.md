@@ -244,7 +244,7 @@ docker-compose down
 ### 3. Générer les Fiches de Paie
 1. Effectuer une requête POST vers :
 ```bash
-curl -X POST http://localhost:8082/api/batch/run
+curl -X POST http://localhost:8082/api/batch/run?month=YYYY-MM
 ```
 2. Le batch génère les fiches de paie et envoie les emails
 
